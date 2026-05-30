@@ -213,9 +213,9 @@ function doTransition(pageId) {
       next.scrollTop = 0;
 
       // Lazy render page content from admin-control files via data.js
-      if (window.MSM && window.MSM.renderPage) {
-        window.MSM.renderPage(pageId);
-      }
+     if (window.MSM && window.MSM.renderPage && pageId !== 'skills') {
+  window.MSM.renderPage(pageId);
+}
     }
     currentPage = pageId;
     updateNavActive(pageId);
