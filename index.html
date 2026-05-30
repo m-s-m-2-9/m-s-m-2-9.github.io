@@ -407,14 +407,52 @@
 
 <!-- Photo Viewer — shared overlay, not a page -->
 <div class="photo-viewer" id="photo-viewer">
-  <button class="viewer-close" onclick="closeViewer()">✕</button>
-  <button class="viewer-nav-btn viewer-prev" onclick="viewerNav(-1)">‹</button>
-  <img class="viewer-img" id="viewer-img" src="" alt="" />
-  <button class="viewer-nav-btn viewer-next" onclick="viewerNav(1)">›</button>
-  <div class="viewer-info">
-    <div class="viewer-info-title" id="viewer-title"></div>
-    <div class="viewer-info-desc"  id="viewer-desc"></div>
+
+  <!-- Close button moved inside viewer -->
+  <button
+    class="viewer-close"
+    onclick="closeViewer()"
+    title="Close (Esc)">
+    ✕
+  </button>
+
+  <!-- Previous -->
+  <button
+    class="viewer-nav-btn viewer-prev"
+    onclick="viewerNav(-1)"
+    title="Previous (←)">
+    ‹
+  </button>
+
+  <!-- Main content wrapper -->
+  <div class="viewer-content">
+
+    <!-- Image area -->
+    <div class="viewer-image-wrap">
+      <img
+        class="viewer-img"
+        id="viewer-img"
+        src=""
+        alt=""
+      />
+    </div>
+
+    <!-- Caption always below image -->
+    <div class="viewer-info">
+      <div class="viewer-info-title" id="viewer-title"></div>
+      <div class="viewer-info-desc" id="viewer-desc"></div>
+    </div>
+
   </div>
+
+  <!-- Next -->
+  <button
+    class="viewer-nav-btn viewer-next"
+    onclick="viewerNav(1)"
+    title="Next (→)">
+    ›
+  </button>
+
 </div>
 
 <!-- PAGE: CV / RESUME -->
