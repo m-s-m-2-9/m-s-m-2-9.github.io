@@ -34,25 +34,26 @@ window.ADMIN_IMAGES = {
   */
   publicAlbums: [
     {
-      id    : 'nationals',
-      title : 'My Nationals Journey',
-      desc  : 'My Nationals Journey REPACEEEE',
-      cover : '',      /* ← paste thumbnail path here when you have one */
-      icon  : '🌆',   /* ← shown when no cover image */
-      count : 12,
-      photos: [{src: 'assets/photos/NATIONAL LEVEL SCHOOL CERTIFICATE.jpeg', title: 'National Representation Certificate', desc: 'A proud moment receiving the certificate for national representation from the school management and dignitaries on stage during a school event.'},
-               {src: 'assets/photos/NATIONAL MAKING.jpeg',                   title: 'Collaborative Innovation in Progress', desc: 'Working closely with  volunteers and mentor to assemble and perfect our working model for the upcoming nationals presentation.' },
-               {src: 'assets/photos/NLACNEWS.jpeg',                          title: 'Official Feature on KVS National Platform', desc: 'Proud to be featured on the official KVS social media handles while showcasing the vibrant cultural diversity of Uttarakhand during the national-level exhibition.' },
-               {src: 'assets/photos/NationalsCertificateStage.jpeg',         title: 'The Winning Moment: Heading to Nationals', desc: 'Receiving the regional first-place award that earned us a spot in the national exhibition lineup.' },
-               {src: 'assets/photos/REGIONAL LEVEL .jpeg',                   title: 'Where It All Began: The Cluster Level Exhibition', desc: 'Standing proudly alongside our exhibition projects representing Uttarakhand during the initial cluster-level selection round, setting the stage for our journey ahead.' },
-               {src: 'assets/photos/SCHOOL LEVEL PPP.jpeg',                  title: 'Project Evaluation and Principal Review', desc: 'Receiving valuable feedback and strategic guidance from our school Principal and teachers during a mock presentation run-through for the national exhibition.' },
-               {src: 'assets/photos/SCHOOL LEVEL.jpeg',                      title: 'The First Victory: Winning 1st Prize at School Level', desc: 'The initial competitive round where my individual project model and display charts won first prize, kicking off my path toward nationals.' },
-               {src: 'assets/photos/SCHOOL LEVELPP.jpeg',                    title: 'Presenting My Project to the School Evaluators', desc: 'Presenting the individual project display on Uttarakhand that successfully cleared the school round and ultimately competed at the national level.' },
-              
-        /* Add photos here:
-           { src: 'assets/photos/nationals/1.jpg', title: 'Day 1', desc: 'Caption' }, */
-      ],
-    },
+  id    : 'nationals',
+  title : 'My Nationals Journey',
+  desc  : 'My Nationals Journey REPACEEEE',
+  cover : '',
+  icon  : '🌆',
+  count : 8,
+  photos: [
+    {src: 'assets/photos/NATIONAL LEVEL SCHOOL CERTIFICATE.jpeg', title: 'National Representation Certificate', desc: 'A proud moment receiving the certificate for national representation from the school management and dignitaries on stage during a school event.'},
+    {src: 'assets/photos/NATIONAL MAKING.jpeg',                   title: 'Collaborative Innovation in Progress', desc: 'Working closely with  volunteers and mentor to assemble and perfect our working model for the upcoming nationals presentation.'},
+    {src: 'assets/photos/NLACNEWS.jpeg',                          title: 'Official Feature on KVS National Platform', desc: 'Proud to be featured on the official KVS social media handles while showcasing the vibrant cultural diversity of Uttarakhand during the national-level exhibition.'},
+    {src: 'assets/photos/NationalsCertificateStage.jpeg',         title: 'The Winning Moment: Heading to Nationals', desc: 'Receiving the regional first-place award that earned us a spot in the national exhibition lineup.'},
+    {src: 'assets/photos/REGIONAL LEVEL .jpeg',                   title: 'Where It All Began: The Cluster Level Exhibition', desc: 'Standing proudly alongside our exhibition projects representing Uttarakhand during the initial cluster-level selection round, setting the stage for our journey ahead.'},
+    {src: 'assets/photos/SCHOOL LEVEL PPP.jpeg',                  title: 'Project Evaluation and Principal Review', desc: 'Receiving valuable feedback and strategic guidance from our school Principal and teachers during a mock presentation run-through for the national exhibition.'},
+    {src: 'assets/photos/SCHOOL LEVEL.jpeg',                      title: 'The First Victory: Winning 1st Prize at School Level', desc: 'The initial competitive round where my individual project model and display charts won first prize, kicking off my path toward nationals.'},
+    {src: 'assets/photos/SCHOOL LEVELPP.jpeg',                    title: 'Presenting My Project to the School Evaluators', desc: 'Presenting the individual project display on Uttarakhand that successfully cleared the school round and ultimately competed at the national level.'}
+
+    /* Add photos here:
+       { src: 'assets/photos/nationals/1.jpg', title: 'Day 1', desc: 'Caption' }, */
+  ],
+},
     {
       id    : 'captain',
       title : 'Captain Arc',
