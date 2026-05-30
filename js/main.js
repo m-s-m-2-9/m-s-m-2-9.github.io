@@ -809,43 +809,11 @@ function showPhoto(index) {
 function viewerNav(dir) { showPhoto(currentPhotoIndex + dir); }
  
 function closeViewer() {
-  const viewer = document.getElementById('photo-viewer');
-  const img = document.getElementById('viewer-img');
-
-  viewer.classList.remove('open');
-
-  if (img) {
-    img.src = '';
-  }
+  document.getElementById('photo-viewer').classList.remove('open');
 }
  
 document.addEventListener('keydown', e => {
-
-  const viewer = document.getElementById('photo-viewer');
-
-  if (viewer && viewer.classList.contains('open')) {
-
-    if (e.key === 'ArrowLeft') {
-      viewerNav(-1);
-      return;
-    }
-
-    if (e.key === 'ArrowRight') {
-      viewerNav(1);
-      return;
-    }
-
-    if (e.key === 'Escape') {
-      closeViewer();
-      return;
-    }
-  }
-
-  if (e.key === 'Escape') {
-    closeGame();
-    closeGate();
-    closeMusicPanel();
-  }
+  if (e.key === 'Escape') { closeViewer(); closeGame(); closeGate(); closeMusicPanel(); }
 });
  
 /* ═══════════════════════════════════════════════════════════
@@ -1758,4 +1726,3 @@ document.addEventListener('click', (event) => {
     alert('\n[CONNECTION PAUSED]\n\nWhatsApp messaging channel is currently deactivated.\nThis secure portal will initialize at a later date.');
   }
 }, true); // The "true" parameter tells the browser to intercept this event BEFORE your theme scripts can catch it!
-
