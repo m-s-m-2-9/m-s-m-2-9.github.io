@@ -49,7 +49,8 @@
       { id: 'birthday', label: 'Clock',    num: '03' },
       { id: 'lists',    label: 'Lists',    num: '04' },
       { id: 'thoughts', label: 'Thoughts', num: '05' },
-      { id: 'games',    label: 'Games',    num: '06' }
+      { id: 'skills',   label: 'Traits',   num: '06' },
+      { id: 'games',    label: 'Games',    num: '07' }
     ]
   };
 
