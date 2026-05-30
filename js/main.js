@@ -809,11 +809,43 @@ function showPhoto(index) {
 function viewerNav(dir) { showPhoto(currentPhotoIndex + dir); }
  
 function closeViewer() {
-  document.getElementById('photo-viewer').classList.remove('open');
+  const viewer = document.getElementById('photo-viewer');
+  const img = document.getElementById('viewer-img');
+
+  viewer.classList.remove('open');
+
+  if (img) {
+    img.src = '';
+  }
 }
  
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeViewer(); closeGame(); closeGate(); closeMusicPanel(); }
+
+  const viewer = document.getElementById('photo-viewer');
+
+  if (viewer && viewer.classList.contains('open')) {
+
+    if (e.key === 'ArrowLeft') {
+      viewerNav(-1);
+      return;
+    }
+
+    if (e.key === 'ArrowRight') {
+      viewerNav(1);
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      closeViewer();
+      return;
+    }
+  }
+
+  if (e.key === 'Escape') {
+    closeGame();
+    closeGate();
+    closeMusicPanel();
+  }
 });
  
 /* ═══════════════════════════════════════════════════════════
