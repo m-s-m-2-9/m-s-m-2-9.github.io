@@ -942,8 +942,8 @@ function renderSkills() {
   }
 
   /* Hobbies section */
-  var hobbiesGrids = doc.querySelectorAll('#page-skills .skills-grid');
-  var hobbiesGrid  = hobbiesGrids.length > 1 ? hobbiesGrids[1] : null;
+var hobbiesGrids = document.querySelectorAll('#page-skills .skills-grid');
+   var hobbiesGrid  = hobbiesGrids.length > 1 ? hobbiesGrids[1] : null;
   var hobbies = tr.hobbies || [];
   if (hobbiesGrid && hobbies.length) {
     hobbiesGrid.innerHTML = hobbies.map(function (hobby) {
