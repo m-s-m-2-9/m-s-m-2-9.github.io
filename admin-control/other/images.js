@@ -47,7 +47,7 @@ window.ADMIN_IMAGES = {
     {src: 'assets/photos/NationalsCertificateStage.jpeg',         title: 'The Winning Moment: Heading to Nationals', desc: 'Receiving the regional first-place award that earned us a spot in the national exhibition lineup.'},
     {src: 'assets/photos/REGIONALLEVEL .jpeg',                   title: 'Where It All Began: The Cluster Level Exhibition', desc: 'Standing proudly alongside our exhibition projects representing Uttarakhand during the initial cluster-level selection round, setting the stage for our journey ahead.'},
     {src: 'assets/photos/SCHOOLLEVELPPP.jpeg',                  title: 'Project Evaluation and Principal Review', desc: 'Receiving valuable feedback and strategic guidance from our school Principal and teachers during a mock presentation run-through for the national exhibition.'},
-    {src: 'assets/photos/SCHOOL LEVEL.jpeg',                      title: 'The First Victory: Winning 1st Prize at School Level', desc: 'The initial competitive round where my individual project model and display charts won first prize, kicking off my path toward nationals.'},
+    {src: 'assets/photos/SCHOOLLEVEL.jpeg',                      title: 'The First Victory: Winning 1st Prize at School Level', desc: 'The initial competitive round where my individual project model and display charts won first prize, kicking off my path toward nationals.'},
     {src: 'assets/photos/SCHOOLLEVELPP.jpeg',                    title: 'Presenting My Project to the School Evaluators', desc: 'Presenting the individual project display on Uttarakhand that successfully cleared the school round and ultimately competed at the national level.'}
 
     /* Add photos here:
