@@ -302,12 +302,39 @@
 .viewer-close {
   position: absolute; top: 2rem; right: 2rem;
   width: 40px; height: 40px;
-  border: 1px solid rgba(255,255,255,0.2); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; cursor: pointer; font-size: 1rem; background: none;
-  transition: border-color 0.2s, background 0.2s;
+  .viewer-close {
+  position: fixed;
+  top: 6rem;
+  right: 2rem;
+
+  width: 52px;
+  height: 52px;
+
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.1rem;
+  background: rgba(0,0,0,0.45);
+
+  z-index: 99999;
+
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.2s;
 }
-.viewer-close:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+
+.viewer-close:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,0.12);
+  transform: scale(1.08);
+}
 .viewer-nav-btn {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px;
@@ -316,9 +343,44 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem; transition: all 0.2s;
 }
-.viewer-nav-btn:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
-.viewer-prev { left: 2rem; }
-.viewer-next { right: 2rem; }
+.viewer-nav-btn {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 56px;
+  height: 56px;
+
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+
+  cursor: pointer;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.4rem;
+
+  z-index: 99999;
+
+  transition: all 0.25s ease;
+}
+
+.viewer-nav-btn:hover {
+  border-color: #fff;
+  background: rgba(255,255,255,0.12);
+}
+
+.viewer-prev {
+  left: 2rem;
+}
+
+.viewer-next {
+  right: 2rem;
+}
 .viewer-info {
   position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
   text-align: center; color: rgba(255,255,255,0.7);
