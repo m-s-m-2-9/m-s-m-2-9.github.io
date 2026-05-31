@@ -662,14 +662,11 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
             onkeydown="if(event.key==='Enter')unlockBirthday()" />
           <button onclick="unlockBirthday()">Unlock</button>
         </div>
-        <!-- Birth details rebuilt by data.js renderBirthdayDetails() from admin-control/pages/clock.js -->
-        <!-- Birth details rebuilt by data.js renderBirthdayDetails() from admin-control/pages/clock.js -->
+                <!-- Birth details rebuilt by data.js renderBirthdayDetails() from admin-control/pages/clock.js -->
         <div class="bday-date-info unlocked" id="bday-secret-info" style="display:none;max-width:400px;margin:2rem auto 0;text-align:left;">
-          <!-- Empty container: Content gets securely injected by your JavaScript configuration folder instead of raw HTML -->
-        </div>
-          <p><strong style="color:var(--text);">Date of Birth:</strong> 29 August 2008</p>
-          <p><strong style="color:var(--text);">Time:</strong> Approximately 1:00 – 1:30 PM IST</p>
-          <p><strong style="color:var(--text);">Place:</strong> Andheri, Maharashtra, India</p>
+          <p><strong style="color:var(--text);">Date of Birth:</strong> <span id="lbl-dob">August 29, 2008</span></p>
+          <p><strong style="color:var(--text);">Time:</strong> <span id="lbl-time"></span></p>
+          <p><strong style="color:var(--text);">Place:</strong> <span id="lbl-place"></span></p>
           <p><strong style="color:var(--text);">Age:</strong> <span id="current-age">—</span></p>
         </div>
       </div>
