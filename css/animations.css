@@ -44,3 +44,32 @@
 }
 
 
+/* ─── LETTER REEL — character scramble on theme change ───── */
+@keyframes reelFadeChar {
+  0%   { opacity: 1; }
+  40%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ─── HAMBURGER REEL — brief line animation on theme change ─ */
+@keyframes reelHamburger {
+  0%   { transform: scaleX(1);   opacity: 1;   }
+  20%  { transform: scaleX(0.5); opacity: 0.3; }
+  45%  { transform: scaleX(1.1); opacity: 0.8; }
+  65%  { transform: scaleX(0.7); opacity: 0.4; }
+  85%  { transform: scaleX(1.0); opacity: 0.9; }
+  100% { transform: scaleX(1);   opacity: 1;   }
+}
+
+.reel-hamburger-active .sb-line,
+.reel-hamburger-active span {
+  animation: reelHamburger 0.48s cubic-bezier(0.16,1,0.3,1) forwards !important;
+}
+.reel-hamburger-active .sb-line:nth-child(2),
+.reel-hamburger-active span:nth-child(2) {
+  animation-delay: 0.04s !important;
+}
+.reel-hamburger-active .sb-line:nth-child(3),
+.reel-hamburger-active span:nth-child(3) {
+  animation-delay: 0.08s !important;
+}
