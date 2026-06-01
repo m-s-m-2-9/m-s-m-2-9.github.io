@@ -36,7 +36,7 @@
     el.style.minWidth  = lockedW + 'px';
 
     var startTime    = performance.now();
-    var totalMs      = 480;   /* total animation duration in ms     */
+    var totalMs      = 750;   /* total animation duration in ms     */
     var chars        = original.split('');
     var realChars    = chars.filter(function(c){ return c !== ' '; }).length;
 
