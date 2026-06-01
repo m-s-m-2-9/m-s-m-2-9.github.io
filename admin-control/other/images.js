@@ -36,7 +36,7 @@ window.ADMIN_IMAGES = {
     {
   id    : 'nationals',
   title : 'My Nationals Journey',
-  desc  : 'My Nationals Journey REPACEEEE',
+  desc  : 'My complete National level exhibition journey—from the initial competitive rounds and rigorous model preparation to the travels, behind-the-scenes setup, and unforgettable camaraderie with fellow delegates.',
   cover : '',
   icon  : '🌆',
   count : 14,
