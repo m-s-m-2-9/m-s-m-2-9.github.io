@@ -677,11 +677,12 @@ transform: translateX(-50%);
   ───────────────────────────────────────────────────────── */
   var _skipCount = 0;
   var _skipAt    = 20 + Math.floor(Math.random() * 6); /* random 20–25 */
-  self._root.addEventListener('click', function (e) {
+
+     self._root.addEventListener('click', function (e) {
     /* Ignore clicks on the Continue button — that's the normal exit */
     if (e.target.id === 'rs-continue' || e.target.closest('#rs-continue')) return;
     _skipCount++;
-    if (_skipCount >= _skipAt) {
+    if (_skipCount >= _skipAt && !self._finishing) { /* ← guard added */
       self._finish();
     }
   });
@@ -862,8 +863,11 @@ transform: translateX(-50%);
   };
 
   RoroSplash.prototype._finish = function () {
+    if (this._finishing) return;   /* ← guard: prevent double-call on rapid click */
+    this._finishing = true;
     var self=this, overlay=document.getElementById('transition-overlay');
     window._roroActive=false; document.body.style.overflow='';
+     
     if(overlay){
       overlay.style.transition='transform 0.4s cubic-bezier(0.76,0,0.24,1)';
       overlay.style.transformOrigin='bottom'; overlay.style.transform='scaleY(1)';
@@ -898,13 +902,19 @@ transform: translateX(-50%);
   };
 
   document.addEventListener('DOMContentLoaded', function () {
-    var _oh=window.startHeroAnimations;
-    window.startHeroAnimations=function(){};
-    window._roroRunHero=function(){
-      window.startHeroAnimations=_oh;
-      if(typeof _oh==='function') _oh();
+    var _oh         = window.startHeroAnimations;
+    var _heroRan    = false;   /* ← guard: hero animations run exactly once */
+
+    window.startHeroAnimations = function(){};
+
+    window._roroRunHero = function(){
+      if (_heroRan) return;                  /* ← prevents duplicate intervals */
+      _heroRan = true;
+      window.startHeroAnimations = _oh;
+      if (typeof _oh === 'function') _oh();
     };
-    window._roroSplashInstance=new RoroSplash();
+
+    window._roroSplashInstance = new RoroSplash();
   });
 
   window.initRoroSplash=function(){
