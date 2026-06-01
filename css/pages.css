@@ -959,7 +959,7 @@ body.birthday-mode .birthday-hero > * {
 ─────────────────────────────────────────────────────────── */
 @media (min-width: 769px) {
   .scroll-indicator {
-    bottom: 1.8rem;
+    bottom: 1.5rem;
   }
 }
 
