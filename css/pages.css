@@ -945,3 +945,162 @@ body.birthday-mode .birthday-hero > * {
   .project-modal         { padding: 1rem; align-items: flex-end; }
   .project-modal-inner   { padding: 1.75rem 1.5rem; border-radius: 4px 4px 0 0; max-height: 80vh; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   ADDITIONS — DO NOT EDIT ABOVE
+═══════════════════════════════════════════════════════════ */
+
+/* ─── FIX: Scroll indicator line overlap — DESKTOP ONLY ───
+   The .scroll-line was visually overlapping with .hero-nav-hint
+   at certain viewport heights. Adding padding-bottom to .hero
+   shifts the flex content upward, leaving room at the bottom.
+   Mobile untouched — this media query never fires on mobile.
+─────────────────────────────────────────────────────────── */
+@media (min-width: 769px) {
+  .hero {
+    padding-bottom: 7rem;
+  }
+}
+
+/* ─── GRID PARALLAX — extend hero-grid beyond hero bounds ──
+   The grid needs to be taller than the hero so translateY
+   applied by home-parallax.js never creates a visible gap.
+   Hero overflow:hidden clips the extended portion.
+─────────────────────────────────────────────────────────── */
+.hero-grid {
+  top:    -20%;
+  bottom: -20%;
+  left:   0;
+  right:  0;
+  will-change: transform;
+}
+
+/* ─── PROFILE CARDS — float + hover animation ────────────── */
+@keyframes profileFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-5px); }
+}
+
+.profile-item {
+  animation: profileFloat 4.5s ease-in-out infinite;
+}
+
+/* Stagger float timing per card */
+.profile-item:nth-child(1) { animation-delay: 0.0s; }
+.profile-item:nth-child(2) { animation-delay: 0.6s; }
+.profile-item:nth-child(3) { animation-delay: 1.2s; }
+.profile-item:nth-child(4) { animation-delay: 0.3s; }
+.profile-item:nth-child(5) { animation-delay: 0.9s; }
+.profile-item:nth-child(6) { animation-delay: 1.5s; }
+
+/* Hover: pause float, accent border, icon color shift */
+.profile-item:hover {
+  animation-play-state: paused;
+  transform: translateY(-3px) scale(1.02);
+}
+
+.profile-item:hover .profile-icon {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Disabled profile card (WhatsApp offline state) */
+.profile-item--disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.profile-item--disabled:hover {
+  animation-play-state: running;
+  transform: none !important;
+  background: var(--bg) !important;
+  box-shadow: none !important;
+}
+.profile-item--disabled:hover::before {
+  width: 0 !important;
+}
+.profile-item--disabled:hover .profile-icon {
+  color: var(--text2) !important;
+  border-color: var(--border) !important;
+}
+
+/* ─── WHATSAPP MODAL ───────────────────────────────────────  */
+.msm-wa-modal {
+  position:   fixed;
+  inset:      0;
+  z-index:    9999;
+  display:    flex;
+  align-items:     center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity:        0;
+  pointer-events: none;
+  transition:     opacity 0.25s ease;
+}
+.msm-wa-modal.open {
+  opacity:        1;
+  pointer-events: all;
+}
+.msm-wa-modal-box {
+  background:    var(--bg2);
+  border:        1px solid var(--border2);
+  border-radius: 12px;
+  padding:       2.5rem 2rem;
+  max-width:     320px;
+  width:         90%;
+  text-align:    center;
+  animation:     fadeSlideUp 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.msm-wa-modal-icon {
+  width:  48px;
+  height: 48px;
+  margin: 0 auto 1.25rem;
+  color:  #25D366;
+}
+.msm-wa-modal-icon svg {
+  width:  100%;
+  height: 100%;
+  fill:   currentColor;
+}
+.msm-wa-modal-title {
+  font-family:   var(--ff-display);
+  font-size:     1.25rem;
+  font-weight:   300;
+  color:         var(--text);
+  margin-bottom: 0.6rem;
+}
+.msm-wa-modal-body {
+  font-size:     0.82rem;
+  color:         var(--text2);
+  line-height:   1.7;
+  margin-bottom: 1.75rem;
+}
+.msm-wa-modal-close {
+  font-family:    var(--ff-mono);
+  font-size:      0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border:         1px solid var(--border2);
+  background:     none;
+  color:          var(--text2);
+  padding:        0.55rem 1.75rem;
+  border-radius:  3px;
+  cursor:         pointer;
+  transition:     border-color 0.2s, color 0.2s;
+}
+.msm-wa-modal-close:hover {
+  border-color: var(--accent);
+  color:        var(--accent);
+}
+
+/* ─── NAV REEL — keep link width stable during animation ─── */
+.nav-links a {
+  display:      inline-block;
+  white-space:  nowrap;
+  overflow:     hidden;
+}
+.nav-links a.reel-animating {
+  pointer-events: all; /* keep clickable during reel */
+}
