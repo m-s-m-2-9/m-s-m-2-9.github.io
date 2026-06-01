@@ -329,4 +329,14 @@ body.cursor-text #cursor-dot {
 }
 
 
+/* ─── CURSOR FIX: Light theme ────────────────────────────── 
+   mix-blend-mode: difference causes the dot to look blurred/
+   inverted on light backgrounds. On light theme only, use
+   normal blend so the accent dot stays clean gold.
+   Dark, Slate, Forest themes keep the existing blend-mode.
+─────────────────────────────────────────────────────────── */
+[data-theme="light"] #cursor-dot {
+  mix-blend-mode: normal;
+  background: var(--accent);
+}
 
