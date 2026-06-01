@@ -37,13 +37,14 @@ window.ADMIN_IMAGES = {
   id    : 'nationals',
   title : 'My Nationals Journey',
   desc  : 'My complete National level exhibition journey—from the initial competitive rounds and rigorous model preparation to the travels, behind-the-scenes setup, and unforgettable camaraderie with fellow delegates.',
-  cover : 'assets/photos/SCHOOLLEVEL.jpeg',
+  cover : 'assets/photos/NATIONALMAKING.jpeg',
   icon  : '🌆',
   count : 14,
   photos: [
-    {src: 'assets/photos/NATIONALLEVELSCHOOLCERTIFICATE.jpeg',   title: 'National Representation Certificate', desc: 'A proud moment receiving the certificate for national representation from the school management and dignitaries on stage during a school event.'},
+    
     {src: 'assets/photos/NATIONALMAKING.jpeg',                   title: 'Collaborative Innovation in Progress', desc: 'Working closely with  volunteers and mentor to assemble and perfect our working model for the upcoming nationals presentation.'},
     {src: 'assets/photos/NLACNEWS.jpeg',                         title: 'Official Feature on KVS National Platform', desc: 'Proud to be featured on the official KVS social media handles while showcasing the vibrant cultural diversity of Uttarakhand during the national-level exhibition.'},
+    {src: 'assets/photos/NATIONALLEVELSCHOOLCERTIFICATE.jpeg',   title: 'National Representation Certificate', desc: 'A proud moment receiving the certificate for national representation from the school management and dignitaries on stage during a school event.'},
     {src: 'assets/photos/NationalsCertificateStage.jpeg',        title: 'The Winning Moment: Heading to Nationals', desc: 'Receiving the regional first-place award that earned us a spot in the national exhibition lineup.'},
     {src: 'assets/photos/REGIONALLEVEL .jpeg',                   title: 'Where It All Began: The Cluster Level Exhibition', desc: 'Standing proudly alongside our exhibition projects representing Uttarakhand during the initial cluster-level selection round, setting the stage for our journey ahead.'},
     {src: 'assets/photos/SCHOOLLEVELPPP.jpeg',                   title: 'Project Evaluation and Principal Review', desc: 'Receiving valuable feedback and strategic guidance from our school Principal and teachers during a mock presentation run-through for the national exhibition.'},
