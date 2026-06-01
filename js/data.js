@@ -316,16 +316,73 @@
      PROFILES PAGE
   ══════════════════════════════════════════════════════════════════ */
 
-  function renderProfiles() {
-    var pr = D.profiles || {};
-    var links = pr.links || [];
+function renderProfiles() {
+    var pr    = D.profiles || {};
+    var links = pr.links   || [];
     var grid  = qs('.profiles-grid');
     if (!grid || !links.length) return;
 
+    /* ── Inject WhatsApp "offline" modal once ───────────── */
+    if (!document.getElementById('msm-wa-modal')) {
+      var modal = document.createElement('div');
+      modal.id        = 'msm-wa-modal';
+      modal.className = 'msm-wa-modal';
+
+      /* Find the first disabled entry's reason text */
+      var waEntry = links.find(function(l) { return l.disabled && l.id === 'whatsapp'; });
+      var reason  = (waEntry && waEntry.disabledReason)
+        ? escapeHTML(waEntry.disabledReason).replace(/\n/g, '<br>')
+        : 'Business messaging is being set up.<br>Reach out via Instagram or LinkedIn for now.';
+      var waIcon  = (waEntry && waEntry.icon) ? waEntry.icon : '';
+
+      modal.innerHTML = [
+        '<div class="msm-wa-modal-box">',
+          '<div class="msm-wa-modal-icon">' + waIcon + '</div>',
+          '<div class="msm-wa-modal-title">WhatsApp</div>',
+          '<div class="msm-wa-modal-body">' + reason + '</div>',
+          '<button class="msm-wa-modal-close"',
+            ' onclick="document.getElementById(\'msm-wa-modal\').classList.remove(\'open\')">',
+            'Got it',
+          '</button>',
+        '</div>'
+      ].join('');
+
+      /* Click backdrop to close */
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.classList.remove('open');
+      });
+      document.body.appendChild(modal);
+    }
+
+    /* ── Build profile cards ─────────────────────────────── */
     grid.innerHTML = links.map(function (link) {
+      var isDisabled = !!link.disabled;
+
+      if (isDisabled) {
+        /* Disabled card — opens modal */
+        return [
+          '<div class="profile-item profile-item--disabled"',
+            ' role="button" tabindex="0"',
+            ' onclick="var m=document.getElementById(\'msm-wa-modal\');if(m)m.classList.add(\'open\')"',
+            ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){var m=document.getElementById(\'msm-wa-modal\');if(m)m.classList.add(\'open\')}"',
+            '>',
+            '<div class="profile-icon">' + (link.icon || '') + '</div>',
+            '<div>',
+              '<div class="profile-info-name">' + escapeHTML(link.label || '') + '</div>',
+              link.handle
+                ? '<div class="profile-info-handle">' + escapeHTML(link.handle) + '</div>'
+                : '',
+            '</div>',
+            '<span class="profile-arrow" aria-hidden="true">—</span>',
+          '</div>'
+        ].join('');
+      }
+
+      /* Active card — opens in new tab */
       return [
-        '<a class="profile-item" href="' + escapeHTML(link.url || '#') + '"',
-          link.url && link.url !== '#' ? ' target="_blank" rel="noopener"' : '',
+        '<a class="profile-item"',
+          ' href="'   + escapeHTML(link.url || '#') + '"',
+          ' target="_blank" rel="noopener noreferrer"',
           '>',
           '<div class="profile-icon">' + (link.icon || '') + '</div>',
           '<div>',
@@ -334,7 +391,7 @@
               ? '<div class="profile-info-handle">' + escapeHTML(link.handle) + '</div>'
               : '',
           '</div>',
-          '<span class="profile-arrow">↗</span>',
+          '<span class="profile-arrow" aria-hidden="true">↗</span>',
         '</a>'
       ].join('');
     }).join('');
