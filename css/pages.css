@@ -958,8 +958,8 @@ body.birthday-mode .birthday-hero > * {
    Mobile untouched — this media query never fires on mobile.
 ─────────────────────────────────────────────────────────── */
 @media (min-width: 769px) {
-  .hero {
-    padding-bottom: 7rem;
+  .scroll-indicator {
+    bottom: 0;
   }
 }
 
