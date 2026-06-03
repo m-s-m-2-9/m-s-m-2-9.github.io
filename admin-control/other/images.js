@@ -64,10 +64,25 @@ window.ADMIN_IMAGES = {
       id    : 'captain',
       title : 'Captain Arc',
       desc  : 'My Captainship Journey',
-      cover : '',
+      cover : 'assets/photos/BadgeCloseUp.jpeg',
       icon  : '🎭',
       count : 8,
-      photos: [],
+      photos: [
+         {src: 'assets/photos/BadgeCloseUp.jpeg',                   title: 'The Investiture: Receiving the Captainship Badge', desc:'A close-up moment during the Official Investiture ceremony, capturing the pinning of the School Captain Badge, marking the formal commencement of my leadership responsibilities.'},
+         {src: 'assets/photos/BadgePrincipal.jpeg',                   title: 'Investiture Ceremony: Presentation of the Badge', desc:'A formal moment on stage during the Official Investiture Ceremony as a school Principal pins the Captainship Badge, initiating my tenure as a Member of the Student Council.'},
+         {src: 'assets/photos/DEBATE COMPETION.jpeg',                   title: 'Debate Competition Certificate Presentation', desc:'Standing on stage with school administrators, teachers, and fellow student achievers, celebrating a first-prize victory in the School-Level Debate Competition alongside winners of various other co-curricular events.'},
+         {src: 'assets/photos/InformalGroupPhoto.jpeg',                   title: 'Informal Student Council Gathering', desc:'A Casual Group photograph with fellow newly appointed student Council Leaders, wearing our Official Leadership Sashes outside the Main Stage.'},
+         {src: 'assets/photos/InvestitureCollage.jpeg',                     title: 'Investiture Ceremony Collage: 2025-26', desc:'A commemorative photo collage capturing key highlights from the official Investiture Ceremony, including the flag-bearing march, the pinning of leadership badges, and the formal introduction of the student council panel on stage.'},
+         {src: 'assets/photos/SPEECH.jpeg',                                   title: 'The Dual Nature of Artificial Intelligence Speech', desc:'Addressing the student body from the stage, delivering a keynote speech on the opportunities and ethical challenges presented by modern AI technologies.'},
+         {src: 'assets/photos/TEACHING MY FELOWS.jpeg',                         title: 'Peer-to-Peer Academic Leadership: Leading the Economics Session', desc:'Taking the initiative to conduct a classroom session on Economics, stepping forward to share my independent study notes with classmates during a temporary gap in our regular Economics faculty schedule.'},
+         {src: 'assets/photos/USHABYEBYE.jpeg',                                   title: 'Farewell and Gratitude: Honoring Our Art Mentor', desc:'Presenting a token of appreciation on stage alongside the core student volunteers and helpers who supported my National level exhibition project, honoring our school Art Teacher during her official retirement ceremony for her invaluable guidance and mentorship.'},
+         {src: 'assets/photos/VICE C GP.jpeg',                                      title: 'Casual Group Photo with the Student Council Panel', desc:'A casual group photograph standing alongside fellow newly appointed captains and vice-captains in our official leadership sashes following a Formal Investiture Ceremony, Commemorating our roles for the Academic Session.'},
+         {src: 'assets/photos/VICE CAPTAIN GP.jpeg',                                  title: 'REPLACE', desc:'REPLACE'},
+         {src: 'jpeg',                   title: 'REPLACE', desc:'REPLACE'},
+
+
+         
+      ],
     },
     {
       id    : 'farewell',
