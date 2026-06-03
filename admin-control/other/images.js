@@ -35,8 +35,7 @@ window.ADMIN_IMAGES = {
   publicAlbums: [
     {
   id    : 'nationals',
-  title : '
-     Nationals',
+  title : 'Nationals',
   desc  : 'My complete National level exhibition journey—from the initial competitive rounds and rigorous model preparation to the travels, behind-the-scenes setup, and unforgettable camaraderie with fellow delegates.',
   cover : 'assets/photos/NATIONALMAKING.jpeg',
   icon  : '🌆',
