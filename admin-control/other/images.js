@@ -28,7 +28,7 @@ window.ADMIN_IMAGES = {
       cover    : 'path/to/thumb.jpg', ← cover thumbnail (or '' for placeholder)
       count    : 12,                  ← number shown on album card
       photos   : [                    ← array of photos inside the album
-        { src: 'path.jpg', title: 'Photo title', desc: 'Caption' },
+        { src: 'REPLACE', title: 'REPLACE', desc: 'REPALCE' },
       ]
     }
   */
@@ -66,7 +66,7 @@ window.ADMIN_IMAGES = {
       desc  : 'My Captainship Journey',
       cover : 'assets/photos/BadgeCloseUp.jpeg',
       icon  : '🎭',
-      count : 8,
+      count : 18,
       photos: [
          {src: 'assets/photos/BadgeCloseUp.jpeg',                   title: 'The Investiture: Receiving the Captainship Badge', desc:'A close-up moment during the Official Investiture ceremony, capturing the pinning of the School Captain Badge, marking the formal commencement of my leadership responsibilities.'},
          {src: 'assets/photos/BadgePrincipal.jpeg',                   title: 'Investiture Ceremony: Presentation of the Badge', desc:'A formal moment on stage during the Official Investiture Ceremony as a school Principal pins the Captainship Badge, initiating my tenure as a Member of the Student Council.'},
@@ -92,7 +92,7 @@ window.ADMIN_IMAGES = {
     {
       id    : 'farewell',
       title : 'Farewell',
-      desc  : 'My Class X and XII Farewell',
+      desc  : 'The ultimate recap of our final days together—from the last laughs on campus to our unforgettable day out. Just us, making memories we\'ll keep forever.',
       cover : '',
       icon  : '🌊',
       count : 20,
