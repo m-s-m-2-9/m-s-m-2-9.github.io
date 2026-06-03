@@ -35,7 +35,8 @@ window.ADMIN_IMAGES = {
   publicAlbums: [
     {
   id    : 'nationals',
-  title : 'My Nationals Journey',
+  title : '
+     Nationals',
   desc  : 'My complete National level exhibition journey—from the initial competitive rounds and rigorous model preparation to the travels, behind-the-scenes setup, and unforgettable camaraderie with fellow delegates.',
   cover : 'assets/photos/NATIONALMAKING.jpeg',
   icon  : '🌆',
@@ -77,10 +78,15 @@ window.ADMIN_IMAGES = {
          {src: 'assets/photos/TEACHING MY FELOWS.jpeg',                         title: 'Peer-to-Peer Academic Leadership: Leading the Economics Session', desc:'Taking the initiative to conduct a classroom session on Economics, stepping forward to share my independent study notes with classmates during a temporary gap in our regular Economics faculty schedule.'},
          {src: 'assets/photos/USHABYEBYE.jpeg',                                   title: 'Farewell and Gratitude: Honoring Our Art Mentor', desc:'Presenting a token of appreciation on stage alongside the core student volunteers and helpers who supported my National level exhibition project, honoring our school Art Teacher during her official retirement ceremony for her invaluable guidance and mentorship.'},
          {src: 'assets/photos/VICE C GP.jpeg',                                      title: 'Casual Group Photo with the Student Council Panel', desc:'A casual group photograph standing alongside fellow newly appointed captains and vice-captains in our official leadership sashes following a Formal Investiture Ceremony, Commemorating our roles for the Academic Session.'},
-         {src: 'assets/photos/VICE CAPTAIN GP.jpeg',                                  title: 'REPLACE', desc:'REPLACE'},
-         {src: 'jpeg',                   title: 'REPLACE', desc:'REPLACE'},
-
-
+         {src: 'assets/photos/VICE CAPTAIN GP.jpeg',                                  title: 'The Official Student Council Portrait', desc:'A formal group photograph featuring the newly appointed captains, vice-captains, and student leaders alongside our school principal, teachers, and administrators on the main stage after the Investiture Ceremony.'},
+         {src: 'assets/photos/BadgeCeremonyCaptain.jpeg',                               title: 'Investiture Ceremony: Receiving the Leadership Epaulettes', desc:'A significant moment on the main stage during the formal Investiture Ceremony as a School Principal secures the leadership stars on my uniform, officially instating my role as School Captain.'},
+         {src: 'assets/photos/CaptainGP.jpeg',                                            title: 'Student Council Group Portrait with Flag-Bearer', desc:'A formal group photograph of the complete Student Council panel, teachers, and school administrators assembled on the main stage, during the Investiture Ceremony.'},
+         {src: 'assets/photos/Handshakewithprincipal.jpeg',                                 title: 'Investiture Ceremony: Formal Handshake with the Principal', desc:'Sharing a formal handshake with our school Principal on the main stage after receiving my leadership position during the official Investiture Ceremony.'},
+         {src: 'assets/photos/Independencedaycasualphoto.jpeg',                               title: 'Independence Day Celebrations', desc:'Dressed in traditional attire mirroring the colors of the national flag, standing on stage with fellow student coordinators holding our event brochures during the Independence Day Celebrations.'},
+         {src: 'assets/photos/Independencedayformalphoto.jpeg',                                 title: 'Independence Day Celebrations: Official Group Portrait', desc:'A formal group photograph standing on the main stage alongside school teachers, administrators, and fellow student coordinators during the Independence Day Celebrations.'},
+         {src: 'assets/photos/RepublicDayAnchoringCaptain.jpeg',                                  title: 'Republic Day Celebrations: Anchoring the Main Event', desc:'Delivering the opening address and anchoring the official program from the podium during the Republic Day Celebrations.'},
+         {src: 'assets/photos/SasheCeremony.jpeg',                                                  title: 'Investiture Ceremony: Presentation of the Leadership Sash', desc:'A proud moment on the main stage during the official Investiture Ceremony as School Principal present me with my leadership sash, solidifying my responsibility as School Captain.'},
+         {src: 'assets/photos/TeachersDay.jpeg',                                                      title: 'Teachers Day Celebrations', desc:'Presenting a floral tribute on the main stage to my Informatics Practices class teacher during the Teachers Day Celebrations, capping off a special day where I took on the role of student-teacher to lead an IP classroom session for my peers.'},
          
       ],
     },
