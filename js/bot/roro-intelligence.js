@@ -167,11 +167,10 @@
   };
 
   /* ════════════════════════════════════════════════════════════
-     STEP 4: HYBRID ROUTER INTEGRATION
-  ════════════════════════════════════════════════════════════ */
+      STEP 4: HYBRID ROUTER INTEGRATION (FIXED & ALIGNED)
+     ════════════════════════════════════════════════════════════ */
 
   window.RoRoIntelligence = {
-    // Primary Entry Point called by manager-roro.js
     Classifier: {
       classify: (input) => Classifier.classify(input)
     },
@@ -179,61 +178,92 @@
     WebsiteSearch: {
       search: (input, KB) => {
         const cls = Classifier.classify(input);
-        // We return a high-score dummy to ensure manager-roro chooses the async path
-        return [{ score: 99, doc: { type: 'hybrid', id: cls.id, cls: cls } }];
+        // Force manager-roro to recognize a highly valid target match
+        return [{ score: 95, doc: { type: 'hybrid', id: cls.id, cls: cls } }];
       },
 
       composeAnswer: (input, results) => {
+        if (!results || !results.length) return null;
         const res = results[0].doc;
         const cls = res.cls;
+        const manager = window.RoRoManagerInstance;
 
-        // Handle Navigation immediately
+        // A. Handle Navigation Queries Immediately
         if (cls.type === 'NAV') {
           const page = window.RORO_CONFIG.pages[cls.id];
-          if (window.navigateTo) window.navigateTo(cls.id);
+          if (typeof window.navigateTo === 'function') window.navigateTo(cls.id);
           
-          // Trigger async summary generation
-          LLMCascade.fetchAI(`Give a 1-sentence analytical summary of the ${page.label} section based on: ${page.summary}`, 'CASUAL')
+          // Asynchronously enqueue descriptive follow-ups to chat window
+          LLMCascade.fetchAI(`Give a 1-sentence description of the ${page.label} section based on: ${page.summary}`, 'CASUAL')
             .then(summary => {
-              if (window.roro) window.roro._enqueue(`Opened ${page.label}. ${summary}`);
+              if (manager && typeof manager._enqueue === 'function') {
+                manager._enqueue(summary);
+              }
             });
 
-          return { messages: [`Navigating to ${page.label}...`] };
+          return { 
+            messages: [`Navigating you directly to the ${page.label} section...`],
+            options: ['Show me Projects', 'Download CV']
+          };
         }
 
-        // Return placeholder for Portfolio/General to trigger manager's _handleAsyncLookup
-        return null; 
+        // B. Route Portfolio & General Queries into the Live Cascading Matrix
+        // We intercept execution here so it never hits a silent drop
+        const profile = (manager && manager._profile) || 'CASUAL';
+        
+        // Return a structural placeholder that guarantees manager render loop visibility
+        return {
+          messages: ["Connecting to the RoRo Intelligence Matrix..."],
+          asyncStub: true, // Marker showing manager it needs to evaluate async
+          cls: cls,
+          executeAsync: async () => {
+            return await LLMCascade.fetchAI(input, profile);
+          },
+          options: ['Show me Projects', 'Download CV']
+        };
       }
     },
 
-    // Hijack RoRoWeb.lookup to be the LLM Cascade entry
+    // Session Memory structural safety mapping for manager references
     SessionMemory: {
-      incrementMessage: () => { /* Compatibility */ },
-      addTopic: () => { /* Compatibility */ },
-      addEntity: () => { /* Compatibility */ },
+      incrementMessage: () => {},
+      addTopic: () => {},
+      addEntity: () => {},
       resolveReference: (t) => t,
       trackResponse: () => {},
       logUnknown: () => {},
       logInternet: () => {},
       logRecruiter: () => {},
-      getAnalytics: () => ({}),
+      getAnalytics: () => ({
+        totalMessages: 1, unknownQueries: [], lowConfidence: [],
+        recruiterQueries: [], internetSearches: [], visitedPages: [], discussedTopics: []
+      }),
       visitorType: 'CASUAL'
+    },
+    
+    KnowledgeGraph: {
+      getRelated: () => []
     }
   };
 
-  // Replace RoRoWeb.lookup to funnel all async questions through the LLM Cascade
+  // Replace fallback system to securely handle pure message lookups
   window.RoRoWeb = {
     lookup: async (query) => {
-      const profile = window.roro?._profile || 'CASUAL';
+      const manager = window.RoRoManagerInstance;
+      const profile = (manager && manager._profile) || 'CASUAL';
       const response = await LLMCascade.fetchAI(query, profile);
-      return { summary: response, source: 'RoRo Intelligence Matrix' };
+      return { 
+        messages: [response], 
+        source: 'RoRo Intelligence Matrix Layer 4.0' 
+      };
     },
     tryMath: (expr) => {
       try { return eval(expr.replace(/[^-()\d/*+.]/g, '')); } catch (e) { return null; }
-    }
+    },
+    clearCache: () => {}
   };
 
-  // Re-export TypoCorrector for safety
+  // Re-export TypoCorrector configuration reference
   window.RoRoIntelligence.TypoCorrector = TypoCorrector;
 
 })();
