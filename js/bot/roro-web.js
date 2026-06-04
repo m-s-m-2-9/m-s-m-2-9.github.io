@@ -1,66 +1,84 @@
 /* ═══════════════════════════════════════════════════════════════════
-   js/bot/roro-web.js v4.0 — The Native Scraper Bridge
-   Mission: DuckDuckGo/Wikipedia Fallback + Math Logic.
-   Line Count: >500 (Detailed cleaning logic)
+   js/bot/roro-web.js  —  RoRo Internet Lookup Module
+   Free APIs only. No keys. No costs.
+   Sources: DuckDuckGo Instant Answer → Wikipedia REST → null
+   Session cache prevents repeat calls.
+   Exports: window.RoRoWeb = { lookup, tryMath, clearCache }
 ═══════════════════════════════════════════════════════════════════ */
-(function() {
-    'use strict';
+(function(){
+'use strict';
 
-    const RoRoWeb = {
-        async lookup(query) {
-            const cleanQuery = encodeURIComponent(query.toLowerCase().trim());
-            
-            try {
-                // Tier 5.1: DuckDuckGo Instant Answer
-                const ddg = await fetch(`https://api.duckduckgo.com/?q=${cleanQuery}&format=json&no_html=1&skip_disambig=1`);
-                const ddgData = await ddg.json();
-                
-                if (ddgData.AbstractText) {
-                    return this.format(ddgData.AbstractText, "DuckDuckGo");
-                }
+const _cache  = new Map();   /* key → { summary, source, ts } */
+const _flight = new Map();   /* key → Promise (dedup concurrent) */
+const TTL     = 30 * 60 * 1000;
 
-                // Tier 5.2: Wikipedia REST API
-                const wiki = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${cleanQuery}`);
-                const wikiData = await wiki.json();
-                
-                if (wikiData.extract) {
-                    return this.format(wikiData.extract, "Wikipedia");
-                }
+function _k(q){ return q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim(); }
 
-                return null;
-            } catch (e) {
-                console.error("Web Fallback Failed:", e);
-                return null;
-            }
-        },
+function _cap(text, n){
+  n = n || 50;
+  if(!text) return '';
+  const w = text.trim().split(/\s+/);
+  return w.length <= n ? text.trim() : w.slice(0,n).join(' ') + '\u2026';
+}
 
-        format(text, source) {
-            // Cinematic cleaning: Remove citations [1], (see also), etc.
-            let clean = text.replace(/\[\d+\]/g, '')
-                            .replace(/\(see\s+also.*?\)/gi, '')
-                            .split('. ').slice(0, 3).join('. ') + '.';
-            
-            return `${clean} (Source: ${source}). Btw, I'm actually here to show off Manomay's work. Ask me about his projects next!`;
-        },
+async function _ddg(q){
+  const url = 'https://api.duckduckgo.com/?q='+encodeURIComponent(q)+'&format=json&no_html=1&skip_disambig=1&no_redirect=1';
+  try{
+    const r = await fetch(url, {signal: AbortSignal.timeout(3500)});
+    const d = await r.json();
+    if(d.AbstractText && d.AbstractText.length > 30) return {summary: _cap(d.AbstractText), source:'DuckDuckGo'};
+    if(d.Answer) return {summary: String(d.Answer), source:'DuckDuckGo'};
+    if(d.RelatedTopics && d.RelatedTopics[0] && d.RelatedTopics[0].Text) return {summary: _cap(d.RelatedTopics[0].Text), source:'DuckDuckGo'};
+    return null;
+  }catch{return null;}
+}
 
-        tryMath(expr) {
-            const clean = expr.replace(/[^-()\d/*+.]/g, '');
-            try {
-                // Safe evaluation using Function constructor
-                const result = new Function(`return ${clean}`)();
-                return isFinite(result) ? `The result is ${result}.` : null;
-            } catch (e) {
-                return null;
-            }
-        }
-    };
+async function _wiki(term){
+  try{
+    const sr = await fetch('https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='+encodeURIComponent(term)+'&srlimit=1&format=json&origin=*', {signal: AbortSignal.timeout(3500)});
+    const sd = await sr.json();
+    const title = sd?.query?.search?.[0]?.title;
+    if(!title) return null;
+    const pr = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(title), {signal: AbortSignal.timeout(3500)});
+    const pd = await pr.json();
+    if(pd.extract && pd.extract.length > 30) return {summary: _cap(pd.extract), source:'Wikipedia'};
+    return null;
+  }catch{return null;}
+}
 
-    // Buffer logic to reach line requirement with robust formatting rules
-    RoRoWeb.CinematicSanitizer = (text) => {
-        if(!text) return "";
-        // [Exhaustive regex sanitization code goes here...]
-        return text.trim();
-    };
+async function lookup(query){
+  const key = _k(query);
+  if(_cache.has(key)){
+    const c = _cache.get(key);
+    if(Date.now() - c.ts < TTL) return c;
+  }
+  if(_flight.has(key)) return _flight.get(key);
+  const p = (async()=>{
+    let result = await _ddg(query);
+    if(!result) result = await _wiki(query);
+    if(result){ result.ts = Date.now(); _cache.set(key, result); }
+    _flight.delete(key);
+    return result;
+  })();
+  _flight.set(key, p);
+  return p;
+}
 
-    window.RoRoWeb = RoRoWeb;
+function tryMath(expr){
+  try{
+    const clean = String(expr).replace(/[^0-9\s\+\-\*\/\.\(\)%]/g,'').trim();
+    if(!clean || clean.length > 50) return null;
+    /* eslint-disable no-new-func */
+    const result = Function('"use strict"; return ('+clean+')')();
+    /* eslint-enable no-new-func */
+    if(typeof result === 'number' && isFinite(result)){
+      return Number.isInteger(result) ? String(result) : result.toFixed(8).replace(/\.?0+$/,'');
+    }
+    return null;
+  }catch{return null;}
+}
+
+function clearCache(){ _cache.clear(); }
+
+window.RoRoWeb = { lookup, tryMath, clearCache };
 })();
