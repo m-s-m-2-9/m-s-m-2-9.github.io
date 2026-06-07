@@ -22,7 +22,7 @@ window.ADMIN_CV = {
   /* ── Contact block (top right of CV) ──────────────────────────── */
   contact: [
     'manomaysmisra2908@gmail.com',
-    '@manomay-shailendra-misra(LinkedIn)',
+    '+91 8369139301',
     'Bengaluru, Karnataka',
     'https://m-s-m-2-9.github.io',     /* ← your portfolio URL */
   ],
