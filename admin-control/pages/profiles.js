@@ -116,9 +116,8 @@ window.ADMIN_PROFILES = {
       e.preventDefault();
       e.stopPropagation();
 
-      // Explicitly copies your exact requested URL text string only
-      const targetDomain = "https://m-s-m-2-9.github.io";
-      navigator.clipboard.writeText(targetDomain).then(() => {
+      // No variables, no lookups — absolute direct text forcing
+      navigator.clipboard.writeText("https://m-s-m-2-9.github.io").then(() => {
         card.classList.add("copied");
         setTimeout(() => card.classList.remove("copied"), 2000);
       });
