@@ -565,10 +565,44 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
           <div><div class="profile-info-name">Resume</div></div>
           <span class="profile-arrow">↗</span>
         </a>
+        
+        <!-- Added Share Portfolio block with dynamic vector icons -->
+        <a class="profile-item" id="copy-url" href="#copy-portfolio">
+          <div class="profile-icon">
+            <div class="icon-wrapper">
+              <svg class="icon-copy" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" xmlns="http://w3.org"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+              <svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" xmlns="http://w3.org"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+          </div>
+          <div>
+            <div class="profile-info-name">Share Portfolio</div>
+            <div class="profile-info-handle">Click to Copy Link</div>
+          </div>
+          <span class="profile-arrow">↗</span>
+        </a>
       </div>
     </div>
   </div>
+
+  <!-- Inline Override Script to handle copy functionality safely -->
+  <script>
+    (function() {
+      document.addEventListener('click', function(e) {
+        const card = e.target.closest('a[href="#copy-portfolio"]');
+        if (card) {
+          e.preventDefault();
+          e.stopPropagation();
+
+          navigator.clipboard.writeText("https://github.io").then(() => {
+            card.classList.add("copied");
+            setTimeout(() => card.classList.remove("copied"), 2000);
+          });
+        }
+      }, true);
+    })();
+  </script>
 </section>
+
 
 <!-- PAGE: JOURNEY / TIMELINE -->
 <section id="page-journey" class="page" data-page="journey">
