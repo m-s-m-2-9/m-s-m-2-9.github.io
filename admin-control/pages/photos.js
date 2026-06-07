@@ -11,7 +11,7 @@
 
 window.ADMIN_PHOTOS = {
 
-  sectionLabel: '08 — Photos',
+  sectionLabel: '07 — Photos',
   heading     : 'Captured moments.',
   subheading  : 'Click any album to browse. Some collections are private.',
 
