@@ -37,8 +37,8 @@ window.ADMIN_SOCIAL = {
     },
     {
       stars : 5,
-      text  : '"Pending Testimonial."',
-      author: '— Name, Role @ Company',
+      text  : '"I am pleased to recommend Manomay Shailendra Misra, a commerce stream student of PM SHRI KV MEG & Centre, Bengaluru, who successfully completed Class XII in 2026. Having taught him for two years, I have witnessed his growth into a sincere, hardworking, and soft‑spoken young man with commendable qualities. Manomay is confident, disciplined, and possesses a natural inclination towards technology, which he explores with curiosity and dedication. His kind and helpful nature, coupled with strong communication skills and a pleasing personality, make him well‑liked among peers and teachers alike. He demonstrates remarkable leadership abilities, with a commanding presence and an articulate style that enables him to persuade and inspire others effectively. His sincerity, perseverance, and balanced outlook reflect his readiness to take on challenges and excel in diverse fields. I am confident that Manomay will prove to be an asset wherever he chooses to pursue his future endeavors."',
+      author: '— Ranjana Pandey, Teacher @ PM SHRI Kendriya Vidyalaya MEG and Centre',
     },
   ],
 
