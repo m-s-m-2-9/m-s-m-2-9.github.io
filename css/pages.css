@@ -371,9 +371,9 @@
 }
 .profile-item:hover           { background: var(--bg2); }
 .profile-item:hover::before   { width: 100%; }
-.profile-icon        { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-family: var(--ff-mono); font-weight: 500; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); }
+.profile-icon        { width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-family: var(--ff-mono); font-weight: 500; flex-shrink: 0; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); position: relative; }
 .profile-info-name   { font-size: 0.95rem; font-weight: 500; color: var(--text); margin-bottom: 0.2rem; }
-.profile-info-handle { font-family: var(--ff-mono); font-size: 0.7rem; color: var(--text3); }
+.profile-info-handle { font-family: var(--ff-mono); font-size: 0.7rem; color: var(--text3); transition: all 0.2s ease; position: relative; }
 .profile-arrow       { margin-left: auto; color: var(--text3); font-size: 0.9rem; transition: transform 0.3s ease, color 0.3s ease; }
 .profile-item:hover .profile-arrow { transform: translateX(4px); color: var(--accent); }
 
@@ -397,20 +397,25 @@
   transition: all 0.2s ease;
 }
 
-/* State when clicked */
-#copy-url.copied .icon-copy {
-  opacity: 0;
-  transform: scale(0.5);
+/* State changes when user triggers the copied class state */
+.profile-item.copied .icon-copy {
+  opacity: 0 !important;
+  transform: scale(0.5) !important;
 }
-#copy-url.copied .icon-check {
-  opacity: 1;
-  transform: scale(1);
+.profile-item.copied .icon-check {
+  opacity: 1 !important;
+  transform: scale(1) !important;
 }
-#copy-url.copied .profile-info-handle {
+.profile-item.copied .profile-info-handle {
   color: #4cd964 !important;
+  font-weight: 500 !important;
 }
-#copy-url.copied .profile-info-handle::after {
-  content: ' (Copied!)';
+
+/* Safely force rendering text independently without breaking data loops */
+.profile-item.copied .profile-info-handle::after {
+  content: ' (Copied!)' !important;
+  color: #4cd964 !important;
+  display: inline-block !important;
 }
 
 /* ─────────────────────────────────────────────────────────
