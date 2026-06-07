@@ -411,7 +411,7 @@
 .year-detail-header  { display: flex; align-items: baseline; gap: 1.5rem; margin-bottom: 1.5rem; }
 .year-detail-year    { font-family: var(--ff-display); font-size: 5rem; font-weight: 300; color: var(--accent); line-height: 1; opacity: 0.5; }
 .year-detail-title   { font-family: var(--ff-display); font-size: 1.8rem; font-weight: 300; color: var(--text); }
-.year-detail-body    { font-size: 0.9rem; line-height: 1.9; color: var(--text2); }
+.year-detail-body    { font-size: 0.9rem; line-height: 1.9; color: var(--text2); white-space: pre-wrap; }
  
 /* ─────────────────────────────────────────────────────────
    BIRTHDAY TIMER PAGE
