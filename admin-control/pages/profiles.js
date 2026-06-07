@@ -12,7 +12,7 @@
 
 window.ADMIN_PROFILES = {
 
-  sectionLabel: '05 — Digital Presence',
+  sectionLabel: '04 — Digital Presence',
   heading     : 'Find me around\nthe internet.',
 
   /* ── Platform links ──────────────────────────────────── */
