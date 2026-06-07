@@ -46,8 +46,8 @@ window.ADMIN_CV = {
       title: 'Creative Educator & Media Coordinator',
       org  : 'ISKCON Summer Camp',
       date : '2024',
-      desc : `Mentored 40+ students (ages 5–15) in an ISKCON cultural and creative arts program. Designed and facilitated hands-on workshops in origami, paper engineering, and cardboard sculpting.Served as Media Lead executing professional photography, videography, and end-to-end vlog production. Coordinated educational temple excursions.`.
-      '},
+      desc : `Mentored 40+ students (ages 5–15) in an ISKCON cultural and creative arts program. Designed and facilitated hands-on workshops in origami, paper engineering, and cardboard sculpting.Served as Media Lead executing professional photography, videography, and end-to-end vlog production. Coordinated educational temple excursions.`
+      },
 
 
 
@@ -83,7 +83,7 @@ window.ADMIN_CV = {
   education: [
     {
       title: 'Don Bosco College',
-      org  : 'Bachelors of Business Administration with Business Analytics ',
+      org  : 'Bachelors of Business Administration with Business Analytics',
       date : '2026 – Present',
     },
 
