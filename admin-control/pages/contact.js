@@ -12,6 +12,6 @@ window.ADMIN_CONTACT = {
   heading: 'Say something\nworth saying.',
 
   /* The italic paragraph below the heading */
-  introText: 'I read every message. I reply to the ones that make me think.\nIf you\'re reaching out for the password — tell me why.',
+  introText: 'I read every message. I reply to the ones that make me think.',
 
 };
