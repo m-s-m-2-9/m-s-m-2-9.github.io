@@ -119,7 +119,7 @@ label : 'Read',
 title : 'Twisted Love',
 meta  : 'Ana Huang · 2021',
 status: 'ongoing',
-label : 'Currently Watching',
+label : 'Currently Reading',
 },
 
 {
@@ -147,7 +147,7 @@ label : 'Read',
 title : 'The Psychology of Money',
 meta  : 'Morgan Housel · 2020',
 status: 'ongoing',
-label : 'Currently Watching',
+label : 'Currently Reading',
 },
 
 {
@@ -168,14 +168,14 @@ label : 'Read',
 title : 'Everything Is F*cked',
 meta  : 'Mark Manson · 2019',
 status: 'want',
-label : 'Want To Watch',
+label : 'Want To Read',
 },
 
 {
 title : 'Without Merit',
 meta  : 'Colleen Hoover · 2017',
 status: 'want',
-label : 'Want To Watch',
+label : 'Want To Read',
 },
 
 {
@@ -211,7 +211,7 @@ label : 'Read',
     title : 'The Girl on the Train',
     meta  : 'Paula Hawkins · 2015',
     status: 'want',
-    label : 'Want To Watch',
+    label : 'Want To Read',
   },
 
   {
@@ -253,35 +253,35 @@ label : 'Read',
     title : 'King of Wrath',
     meta  : 'Ana Huang · 2022',
     status: 'ongoing',
-    label : 'Currently Watching',
+    label : 'Currently Reading',
   },
 
   {
     title : 'The Power of Your Subconscious Mind',
     meta  : 'Joseph Murphy · 1963',
     status: 'want',
-    label : 'Want To Watch',
+    label : 'Want To Read',
   },
 
   {
     title : 'Eat That Frog!',
     meta  : 'Brian Tracy · 2001',
     status: 'want',
-    label : 'Want To Watch',
+    label : 'Want To Read',
   },
 
   {
     title : 'Corporate Chanakya',
     meta  : 'Radhakrishnan Pillai · 2010',
     status: 'want',
-    label : 'Want To Watch',
+    label : 'Want To Read',
   },
 
   {
     title : 'Sapiens: A Brief History of Humankind',
     meta  : 'Yuval Noah Harari · 2011',
     status: 'want',
-    label : 'Want To Watch',
+    label : 'Want To Read',
   },
 
   {
