@@ -24,7 +24,7 @@ window.ADMIN_CV = {
     'manomaysmisra2908@gmail.com',
     '+91 8369139301',
     'Bengaluru, Karnataka',
-    'manomay.com — replace',     /* ← your portfolio URL */
+    'https://m-s-m-2-9.github.io/',     /* ← your portfolio URL */
   ],
 
   /* ── Summary paragraph ─────────────────────────────────────────── */
