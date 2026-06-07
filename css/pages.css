@@ -376,7 +376,43 @@
 .profile-info-handle { font-family: var(--ff-mono); font-size: 0.7rem; color: var(--text3); }
 .profile-arrow       { margin-left: auto; color: var(--text3); font-size: 0.9rem; transition: transform 0.3s ease, color 0.3s ease; }
 .profile-item:hover .profile-arrow { transform: translateX(4px); color: var(--accent); }
- 
+
+/* ── Copy Link Success Notification States ── */
+.icon-wrapper {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-check {
+  position: absolute;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s ease;
+  color: #4cd964;
+}
+.icon-copy {
+  transition: all 0.2s ease;
+}
+
+/* State when clicked */
+#copy-url.copied .icon-copy {
+  opacity: 0;
+  transform: scale(0.5);
+}
+#copy-url.copied .icon-check {
+  opacity: 1;
+  transform: scale(1);
+}
+#copy-url.copied .profile-info-handle {
+  color: #4cd964 !important;
+}
+#copy-url.copied .profile-info-handle::after {
+  content: ' (Copied!)';
+}
+
 /* ─────────────────────────────────────────────────────────
    JOURNEY / TIMELINE PAGE
 ───────────────────────────────────────────────────────── */
