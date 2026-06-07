@@ -16,7 +16,7 @@
 
 window.ADMIN_PROJECTS = {
 
-  sectionLabel: '11 — Projects',
+  sectionLabel: '03 — Projects',
   heading     : 'Things I\'ve built.\nThings I\'m building.',
 
   /* ── Flat projects list ───────────────────────────────── */
