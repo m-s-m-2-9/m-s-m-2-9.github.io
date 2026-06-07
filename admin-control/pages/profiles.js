@@ -121,7 +121,7 @@ window.ADMIN_PROFILES = {
       e.preventDefault();
       e.stopPropagation();
 
-      navigator.clipboard.writeText("https://github.io").then(() => {
+      navigator.clipboard.writeText("https://m-s-m-2-9.github.io").then(() => {
         card.classList.add("copied");
         setTimeout(() => card.classList.remove("copied"), 2000);
       });
