@@ -46,7 +46,7 @@ window.ADMIN_CV = {
       title: 'Creative Educator & Media Coordinator',
       org  : 'ISKCON Summer Camp',
       date : '2024',
-      desc : 'Mentored 40+ students (ages 5–15) in an ISKCON cultural and creative arts program. Designed and facilitated hands-on workshops in origami, paper engineering, and cardboard sculpting.Served as Media Lead executing professional photography, videography, and end-to-end vlog production. Coordinated educational temple excursions.
+      desc : `Mentored 40+ students (ages 5–15) in an ISKCON cultural and creative arts program. Designed and facilitated hands-on workshops in origami, paper engineering, and cardboard sculpting.Served as Media Lead executing professional photography, videography, and end-to-end vlog production. Coordinated educational temple excursions.`.
       '},
 
 
@@ -55,7 +55,7 @@ window.ADMIN_CV = {
       title: 'Visual Designer',
       org  : 'Golden Star PG',
       date : '2022',
-      desc : 'Designed and launched the official brand logo for a single-outlet premium paying guest (PG) accommodation. Developed clean, modern visual assets to establish a distinct local identity, enhance regional visibility, and attract prospective residents.',
+      desc : `Designed and launched the official brand logo for a single-outlet premium paying guest (PG) accommodation. Developed clean, modern visual assets to establish a distinct local identity, enhance regional visibility, and attract prospective residents.`,
     },
 
      
@@ -64,7 +64,7 @@ window.ADMIN_CV = {
       title: 'Solutions Architect',
       org  : 'Mayura Woods',
       date : '2024',
-      desc : 'Designed and deployed a 24/7 automated chatbot for a furniture business. Architected the core conversation flows to handle customer inquiries continuously, streamlining digital engagement and improving response efficiency for the brand.',
+      desc : `Designed and deployed a 24/7 automated chatbot for a furniture business. Architected the core conversation flows to handle customer inquiries continuously, streamlining digital engagement and improving response efficiency for the brand.`,
     },
 
 
