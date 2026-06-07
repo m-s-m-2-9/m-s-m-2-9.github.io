@@ -64,19 +64,32 @@ window.ADMIN_THOUGHTS = {
       ],
     },
 
-    {
+        {
       id     : 'god',
       icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.886L4.2 10.8l5.888 1.914L12 21l1.912-5.886 5.888-1.914-5.888-1.914Z"/></svg>`,
       title  : 'God & Faith',
-      preview: 'Questions I sit with. Answers I\'m still finding.',
+      preview: 'The mechanics of belief, inherited dogmas, and spiritual corporations.',
       posts  : [
         {
+          date : 'June 2026',
+          title: 'The Architecture of Comfort',
+          body : 'When hit with crisis, human instinct splits: some lean on family, some lock onto reality, and others turn to an abstract entity called God. It isn’t inherently wrong to remember something comforting in dark times, but the danger emerges when this coping loop overrides practical execution. We watch people waste critical windows praying for miracles inside living rooms, only seeking actual medical intervention when it is tragically too late. Historically, ancient societies engineered religious rituals out of brilliant, raw utility: menstrual isolation was originally a culturally enforced rest period to protect women from grueling agrarian labor; eclipse bans prevented optical damage and solar-microbial food contamination; and clipping nails or hair in the dark was forbidden to avoid deep wounds and contamination before electricity existed. Over centuries, society stripped away the scientific rationale, weaponized the habits into rigid taboos, and forgot that these were simple human health adjustments. When the comfort blanket replaces the cure, humanity ends up remembering itself only when the damage is permanent.',
+        },
+
+        {
+          date : 'May 2026',
+          title: 'The Sunk Cost of Accidental Geography',
+          body : 'Faith is rarely an individual discovery of absolute truth; it is a geographic accident inherited like property lines. A person born in Italy will fiercely defend Catholicism, while that exact same human born in India will aggressively protect Hinduism. We don’t choose our foundational dogmas; we are force-fed them in childhood before our analytical filters switch on. If you tell an isolated child nothing about God, they will never naturally perform complex sectarian rituals later in life. Yet, grown adults execute archaic traditions purely out of manners, conditioning, or fear of societal friction. This is driven by deep evolutionary and neurological wiring: challenging a core belief triggers an "amygdala hijack"—the exact same sector of the brain that handles fight-or-flight survival. Attacking a doctrine threatens to rip away their existential safety net, creating a primal panic. The resulting anger is never actually about intricate theological texts; it is a tribal reflex to protect the "in-group" family and ancestral identity from an invading "out-group" outsider.',
+        },
+
+        {
           date : 'April 2026',
-          title: 'Replace — Post Title',
-          body : 'Replace this with your thoughts on faith, religion, or the absence of it.',
+          title: 'The Commercialization of Devotion',
+          body : 'Private faith is an internal psychological toolkit for handling grief or establishing cosmic order—it requires no middleman. Exploitation begins the second a human intermediary transforms that quiet belief into a corporate pipeline. Modern religious systems function exactly like major corporations. फ्रंटलाइन workers handle grueling logistics like hosting, cleaning, and sourcing ritual items, while a single priest steps in at the end to extract a heavy premium for "specialized executive knowledge." It mirrors premium corporate models: gatekeepers convince you that access to the divine is invalid unless a certified professional is paid to chant exclusive phrases, monopolizing the marketplace. They monetize emotional vulnerability, charging an enterprise premium because you can’t easily put a price tag on peace of mind during crisis. Spiritual empires like ISKCON or celebrity "Sri Sri" gurus execute global franchising, standardized branding, copyrighted merchandise, and massive real-estate portfolios. They build corporate startups using devout followers as unpaid intern labor, turning the living guru into a brand logo. Followers place human corporate logos in household altars, ensuring that their psychological loyalty—and capital—flows straight to the upper management tier of a financial empire.',
         },
       ],
     },
+
 
     {
       id     : 'science',
