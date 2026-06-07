@@ -790,7 +790,7 @@ body.birthday-mode .birthday-hero > * {
   font-style: italic; 
   color: var(--text2); 
   line-height: 1.7; 
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   position: relative;
 }
 
