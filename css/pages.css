@@ -775,7 +775,7 @@ body.birthday-mode .birthday-hero > * {
 
 .testimonial-card    { 
   background: var(--bg); 
-  padding: 2rem; 
+  padding: 2rem 2rem 1.25rem 2rem; 
   display: flex; 
   flex-direction: column; 
   transition: background 0.3s ease;
