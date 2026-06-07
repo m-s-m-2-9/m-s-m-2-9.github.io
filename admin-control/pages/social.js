@@ -7,7 +7,7 @@
 
 window.ADMIN_SOCIAL = {
 
-  sectionLabel: '03 — Social Proof',
+  sectionLabel: '02 — Social Proof',
   heading     : 'People Who\nShaped My Work.',
 
 
@@ -49,8 +49,8 @@ window.ADMIN_SOCIAL = {
 (function() {
   function forceLabelUpdate() {
     const labelContainer = document.querySelector('#page-social .section-label');
-    if (labelContainer && labelContainer.textContent !== '03 — Social Proof') {
-      labelContainer.textContent = '03 — Social Proof';
+    if (labelContainer && labelContainer.textContent !== '02 — Social Proof') {
+      labelContainer.textContent = '02 — Social Proof';
     }
   }
   setInterval(forceLabelUpdate, 200);
