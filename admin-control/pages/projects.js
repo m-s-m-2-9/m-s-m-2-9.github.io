@@ -38,21 +38,29 @@ Designed explicitly to build user retention, the system supports versatile deliv
     },
 
 
-    {
+        {
       title      : 'Until The Bullet Woke Me',
-      meta       : 'Novel Writing · 2025',
-      status     : 'completed',
-      label      : 'Completed',
-      description: 'Replace this with a description of "Until The Bullet Woke Me".\n\nWhat is it? A story, a script, a poem? What was the theme? What inspired it? Where was it published or shared?',
+      meta       : 'Novel Writing · In Progress',
+      status     : 'wip',
+      label      : 'In Progress',
+      /* This text appears in the popup when user clicks the project. */
+      description: `Authoring a high-stakes, speculative survival thriller novel born from an intensely vivid, hyper-realistic dream that blurred the lines between nightmare and reality. The story explores a terrifying, unprecedented premise: the complete and sudden collapse of India's formidable tri-services defense grid, leaving the nation entirely vulnerable as a foreign power launches a ruthless blitzkrieg targeting civilian populations with jet airstrikes and missile barrages. 
+
+Stripped of the traditional safety nets of military protection, the narrative pivots away from geopolitical strategies to focus entirely on a localized, boots-on-the-ground human perspective. It follows a young protagonist thrust into sudden adulthood, forced to navigate the chaos of an active war zone alongside a close-knit group of friends. It is a raw, fast-paced survival story that dissects the psychological toll of urban warfare, the instinct to protect one's own, and the resilience of youth when forced to survive amidst the ruins of their world. Currently in active drafting, the novel aims to capture the exact cinematic intensity and haunting realism that inspired its inception.`,
     },
 
-    {
-      title      : 'MSM Personal Website',
-      meta       : 'Web · 2025 – Present',
+
+        {
+      title      : 'MSM Personal Portfolio Ecosystem',
+      meta       : 'Web Architecture · 2025 – Present',
       status     : 'ongoing',
-      label      : 'Currently Working On',
-      description: 'This website you\'re currently on.\n\nBuilt from scratch with vanilla HTML, CSS, and JavaScript. No frameworks, no templates. Features a cinematic intro, a custom content management system, a sidebar navigation system, 5 built-in games, photo albums, and a full thoughts section.\n\nEvery pixel was placed deliberately.',
+      label      : 'Active Development',
+      /* This text appears in the popup when user clicks the project. */
+      description: `The highly optimized, minimalist personal portfolio ecosystem currently being viewed. Engineered entirely from the ground up utilizing strict semantic HTML5 structural tags, raw CSS3 layouts, and vanilla asynchronous JavaScript modules—deliberately bypassing heavy framework dependencies to achieve near-zero latency rendering performance. The front-end visual architecture features a crisp, geometric line-art aesthetic customized with uniform layout borders, synchronized accent-glow states, and fully justified text formatting blocks. 
+
+The system implements a complex array of interactive engineering scripts: a fluid horizontal timeline mapping life narratives, custom modal views, and an absolute asynchronous clipboard execution model that lets users natively copy site links inline without triggering disruptive target-tabs or browser alerts. It includes a multi-device gaming deck containing five built-in public engines—including custom-drawn outline vector SVGs for Snake, 2048, and Memory Match—coupled with a private GitHub/APK family access directory. Backed by an isolated text-based content management architecture that runs on flat data files, every pixel and interaction script across this platform was written entirely by hand to maintain absolute structural integrity.`,
     },
+
 
 
   ],
