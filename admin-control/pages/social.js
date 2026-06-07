@@ -8,7 +8,7 @@
 window.ADMIN_SOCIAL = {
 
   sectionLabel: '03 — Social Proof',
-  heading     : 'People & places\nI\'ve worked with.',
+  heading     : 'People Who\nShaped My Work.',
 
   /* ── Scrolling logos / company names ────────────────────────────── */
   /*
