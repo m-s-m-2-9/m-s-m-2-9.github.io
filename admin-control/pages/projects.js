@@ -42,7 +42,7 @@ Designed explicitly to build user retention, the system supports versatile deliv
       title      : 'Until The Bullet Woke Me',
       meta       : 'Novel Writing · In Progress',
       status     : 'wip',
-      label      : 'In Progress',
+      label      : 'Ongoing',
       /* This text appears in the popup when user clicks the project. */
       description: `Authoring a high-stakes, speculative survival thriller novel born from an intensely vivid, hyper-realistic dream that blurred the lines between nightmare and reality. The story explores a terrifying, unprecedented premise: the complete and sudden collapse of India's formidable tri-services defense grid, leaving the nation entirely vulnerable as a foreign power launches a ruthless blitzkrieg targeting civilian populations with jet airstrikes and missile barrages. 
 
@@ -53,7 +53,7 @@ Stripped of the traditional safety nets of military protection, the narrative pi
         {
       title      : 'MSM Personal Portfolio Ecosystem',
       meta       : 'Web Architecture · 2025 – Present',
-      status     : 'ongoing',
+      status     : 'Ongoing',
       label      : 'Active Development',
       /* This text appears in the popup when user clicks the project. */
       description: `The highly optimized, minimalist personal portfolio ecosystem currently being viewed. Engineered entirely from the ground up utilizing strict semantic HTML5 structural tags, raw CSS3 layouts, and vanilla asynchronous JavaScript modules—deliberately bypassing heavy framework dependencies to achieve near-zero latency rendering performance. The front-end visual architecture features a crisp, geometric line-art aesthetic customized with uniform layout borders, synchronized accent-glow states, and fully justified text formatting blocks. 
