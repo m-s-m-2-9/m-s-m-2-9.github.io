@@ -116,31 +116,3 @@ window.ADMIN_PROFILES = {
   // Monitor DOM cycles continuously to make sure the loop updates stick
   setInterval(applyFix, 500);
 })();
-Use code with caution.Step 2: Restore your index.html back to its original codeSince your loop engine handles the card template distribution automatically, delete the extra <script> tag layout block you just added to index.html (the code shown in your screenshot spanning lines 587 to 604).Revert your profile section in index.html to look clean and standard again:html<!-- PAGE: PROFILES / SOCIAL -->
-<section id="page-profiles" class="page" data-page="profiles">
-  <div class="page-inner">
-    <div class="container section">
-      <div class="section-label reveal">05 — Digital Presence</div>
-      <h2 class="section-title reveal reveal-d1">Find me around<br>the internet.</h2>
-
-      <!-- Grid rebuilt by data.js from admin-control/pages/profiles.js → links -->
-      <div class="profiles-grid reveal reveal-d2">
-        <a class="profile-item" id="linkedin-link" href="#" target="_blank">
-          <div class="profile-icon">💼</div>
-          <div><div class="profile-info-name">LinkedIn</div></div>
-          <span class="profile-arrow">↗</span>
-        </a>
-        <a class="profile-item" id="instagram-link" href="#" target="_blank">
-          <div class="profile-icon">📸</div>
-          <div><div class="profile-info-name">Instagram</div></div>
-          <span class="profile-arrow">↗</span>
-        </a>
-        <a class="profile-item" id="resume-link" href="#" target="_blank">
-          <div class="profile-icon">📄</div>
-          <div><div class="profile-info-name">Resume</div></div>
-          <span class="profile-arrow">↗</span>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
