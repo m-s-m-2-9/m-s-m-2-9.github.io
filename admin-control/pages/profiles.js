@@ -77,7 +77,7 @@ window.ADMIN_PROFILES = {
       id      : 'copy-url',
       label   : 'Share Portfolio',
       handle  : 'Click to Copy Link',
-      url     : '#copy-portfolio',
+      url     : 'https://m-s-m-2-9.github.io',
       disabled: false,
       icon    : '<div class="icon-wrapper"><svg class="icon-copy" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" xmlns="http://w3.org"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg><svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" xmlns="http://w3.org"><polyline points="20 6 9 17 4 12"></polyline></svg></div>',
     },
@@ -86,43 +86,32 @@ window.ADMIN_PROFILES = {
 
 };
 
-// ── Overriding Listener Loop ──
+// ── Strict Clipboard Override Script ──
 (function() {
-  const nativeAlertWindow = window.alert;
-  window.alert = function(msg) {
-    if (msg && (msg.toLowerCase().includes("copied") || msg.toLowerCase().includes("portfolio") || msg.toLowerCase().includes("undefined"))) {
+  // 1. Force kill any clunky system alerts or popup windows immediately
+  const oldAlert = window.alert;
+  window.alert = function(text) {
+    if (text && (text.toLowerCase().includes("copied") || text.toLowerCase().includes("undefined"))) {
       return true;
     }
-    return nativeAlertWindow.apply(window, arguments);
+    return oldAlert.apply(window, arguments);
   };
 
-  function enforceAttributes() {
-    const linkItems = document.querySelectorAll('a');
-    linkItems.forEach(el => {
-      if (el.textContent.includes('Share Portfolio') || el.href.includes('#copy-portfolio')) {
-        if (el.getAttribute('target') === '_blank') {
-          el.removeAttribute('target');
-        }
-        if (el.id !== 'copy-url') {
-          el.setAttribute('id', 'copy-url');
-        }
-      }
-    });
-  }
+  // 2. Direct event interceptor targeting your exact web link text string
+  document.addEventListener('click', function(event) {
+    const shareBtn = event.target.closest('a[href*="m-s-m-2-9.github.io"]');
+    
+    if (shareBtn && shareBtn.textContent.includes('Share Portfolio')) {
+      event.preventDefault();
+      event.stopPropagation();
 
-  document.addEventListener('click', function(e) {
-    const card = e.target.closest('#copy-url') || e.target.closest('a[href*="#copy-portfolio"]');
-    if (card) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      // No variables, no lookups — absolute direct text forcing
+      // Simple, direct copy of your exact text string and nothing else
       navigator.clipboard.writeText("https://m-s-m-2-9.github.io").then(() => {
-        card.classList.add("copied");
-        setTimeout(() => card.classList.remove("copied"), 2000);
+        // Toggle the visual green layout feedback states
+        shareBtn.removeAttribute('target');
+        shareBtn.classList.add("copied");
+        setTimeout(() => shareBtn.classList.remove("copied"), 2000);
       });
     }
   }, true);
-
-  setInterval(enforceAttributes, 200);
 })();
