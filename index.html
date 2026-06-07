@@ -1191,6 +1191,25 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
       </div>
     </div>
   </div>
+
+  <!-- Isolated Testimonial Toggle Click Engine Layer -->
+  <script>
+    (function() {
+      document.addEventListener('click', function(e) {
+        const card = e.target.closest('.testimonial-card');
+        if (card) {
+          const grid = card.parentElement;
+          if (grid && grid.classList.contains('testimonials-grid')) {
+            const cards = Array.from(grid.children);
+            // Target the 3rd index node card precisely (the long paragraph block)
+            if (cards.indexOf(card) === 2) {
+              card.classList.toggle('expanded');
+            }
+          }
+        }
+      }, true);
+    })();
+  </script>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
