@@ -98,9 +98,9 @@ window.ADMIN_THOUGHTS = {
       preview: 'The universe doesn\'t care. And somehow that\'s beautiful.',
       posts  : [
         {
-          date : 'March 2026',
-          title: 'Replace — Post Title',
-          body : 'Replace this with your thoughts on science, the cosmos, or discovery.',
+          date : 'Pending',
+          title: 'Pending',
+          body : 'Coming Soon',
         },
       ],
     },
@@ -112,9 +112,9 @@ window.ADMIN_THOUGHTS = {
       preview: 'Why we\'re here, how to live well, and the rest of it.',
       posts  : [
         {
-          date : 'February 2026',
-          title: 'Replace — Post Title',
-          body : 'Replace this with your thoughts on how to live.',
+          date : 'Pending',
+          title: 'Pending',
+          body : 'Coming Soon',
         },
       ],
     },
@@ -126,9 +126,9 @@ window.ADMIN_THOUGHTS = {
       preview: 'Patterns in people. What we celebrate. What we should question.',
       posts  : [
         {
-          date : 'January 2026',
-          title: 'Replace — Post Title',
-          body : 'Replace with your observations about society.',
+          date : 'Pending',
+          title: 'Pending',
+          body : 'Coming Soon',
         },
       ],
     },
@@ -140,9 +140,9 @@ window.ADMIN_THOUGHTS = {
       preview: 'AI, the internet, attention — and what it\'s doing to us.',
       posts  : [
         {
-          date : 'December 2025',
-          title: 'Replace — Post Title',
-          body : 'Replace with your thoughts on technology.',
+          date : 'Pending',
+          title: 'Pending',
+          body : 'Coming Soon',
         },
       ],
     },
