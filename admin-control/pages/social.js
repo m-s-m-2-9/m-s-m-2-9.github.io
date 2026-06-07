@@ -7,8 +7,11 @@
 
 window.ADMIN_SOCIAL = {
 
-  sectionLabel: '02 — Social Proof',
+  sectionLabel: '03 — Social Proof', 
+  sectionNum  : '03',              // 👈 Add this line if it exists!
+  number      : '03',              // 👈 Add this line if it exists!
   heading     : 'People Who\nShaped My Work.',
+
 
   /* ── Scrolling logos / company names ────────────────────────────── */
   /*
