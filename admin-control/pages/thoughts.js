@@ -29,7 +29,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'politics',
-      icon   : '🏛️',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 22h20M4 22V10h16v12M2 10l10-8 10 8M6 14v4M10 14v4M14 14v4M18 14v4"/></svg>`,
       title  : 'Politics',
       preview: 'Power, governance, and what it means to be Indian.',
       posts  : [
@@ -66,7 +66,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'god',
-      icon   : '✦',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.886L4.2 10.8l5.888 1.914L12 21l1.912-5.886 5.888-1.914-5.888-1.914Z"/></svg>`,
       title  : 'God & Faith',
       preview: 'Questions I sit with. Answers I\'m still finding.',
       posts  : [
@@ -80,7 +80,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'science',
-      icon   : '🔬',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h12M14 22H10M8 2v3M16 2v3M9 11h6M12 5v6M5 18l4-7h6l4 7Z"/></svg>`,
       title  : 'Science',
       preview: 'The universe doesn\'t care. And somehow that\'s beautiful.',
       posts  : [
@@ -94,7 +94,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'life',
-      icon   : '◎',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`,
       title  : 'Life & Philosophy',
       preview: 'Why we\'re here, how to live well, and the rest of it.',
       posts  : [
@@ -108,7 +108,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'society',
-      icon   : '🌐',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></svg>`,
       title  : 'Society & Culture',
       preview: 'Patterns in people. What we celebrate. What we should question.',
       posts  : [
@@ -122,7 +122,7 @@ window.ADMIN_THOUGHTS = {
 
     {
       id     : 'tech',
-      icon   : '⌬',
+      icon   : `<svg xmlns="http://w3.org" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>`,
       title  : 'Technology',
       preview: 'AI, the internet, attention — and what it\'s doing to us.',
       posts  : [
