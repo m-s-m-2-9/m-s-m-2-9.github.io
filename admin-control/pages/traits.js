@@ -15,7 +15,7 @@ window.ADMIN_TRAITS = {
   sectionLabel: '10 — Traits',
 
   /* ── Large italic opening quote ─── */
-  heroQuote: '"Jack of all trades, master of none — and that\'s the point."',
+  heroQuote: '"Jack of all Trades, Master of None — and that\'s the Point."',
 
   /* ── Horizontally scrolling strip of words ─── */
   /*
