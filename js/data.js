@@ -939,25 +939,30 @@ function renderProjects() {
    *
    * @param {string} pageId - matches data-page attribute on <section>
    */
-  window.MSM.renderPage = function (pageId) {
-    if (_rendered[pageId]) return; /* already done */
-    _rendered[pageId] = true;
+window.MSM.renderPage = function (pageId) {
+  if (_rendered[pageId]) return; 
+  _rendered[pageId] = true;
 
-    switch (pageId) {
-      case 'about'   : renderIdentity();   break;
-      case 'resume'  : renderResume();     break;
-      case 'profiles': renderProfiles();   break;
-      case 'journey' : renderJourney();    break;
-      case 'birthday': startBirthdayTimer(); break;
-      case 'thoughts': renderThoughts();   break;
-      case 'photos'  : renderPhotos();     break;
-      case 'lists'   : renderLists();      break;
-case 'skills'  : renderSkills(); window.MSM.animateSkillBars(); break;
-case 'contact' : renderContact(); break;      case 'games'   : renderGames();      break;
-      case 'social'  : renderSocial();     break;
-      case 'projects': renderProjects();   break;
-    }
-  };
+  switch (pageId) {
+    case 'about'   : renderIdentity();    break;
+    case 'resume'  : renderResume();      break;
+    case 'profiles': renderProfiles();    break;
+    case 'journey' : renderJourney();     break;
+    case 'birthday': startBirthdayTimer(); break;
+    case 'thoughts': renderThoughts();    break;
+    case 'photos'  : renderPhotos();      break;
+    case 'lists'   : renderLists();       break;
+    
+    // Add BOTH names here to catch whichever ID your HTML section uses:
+    case 'skills'  : 
+    case 'traits'  : renderSkills(); window.MSM.animateSkillBars(); break;
+    
+    case 'contact' : renderContact();     break;      
+    case 'games'   : renderGames();       break;
+    case 'social'  : renderSocial();      break;
+    case 'projects': renderProjects();    break;
+  }
+};
 
 
 
