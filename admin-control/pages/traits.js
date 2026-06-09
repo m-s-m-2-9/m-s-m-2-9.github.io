@@ -15,7 +15,7 @@ window.ADMIN_TRAITS = {
   sectionLabel: '10 — Traits',
 
   /* ── Large italic opening quote ─── */
-  heroQuote: '"Jack of all Trades, Master of None — and that\'s the Point."',
+  heroQuote: "Specialization is for bugs. I prefer exploring a bit of everything.",
 
   /* ── Horizontally scrolling strip of words ─── */
   /*
@@ -28,11 +28,10 @@ window.ADMIN_TRAITS = {
     'Media Production',
     'Creative Writing',
     'Photography',
-    'Origami',
     'Business Strategy',
     'Event Management',
     'Music',
-    'Storytelling',
+    'Vibe Coding',
     /* Add more strings here:  'Your Skill', */
   ],
 
