@@ -966,12 +966,15 @@ case 'contact' : renderContact(); break;      case 'games'   : renderGames();   
    Reads from: admin-control/pages/traits.js
 ══════════════════════════════════════════════════════════ */
 function renderSkills() {
-  // CHANGE THIS LINE: Read from window.ADMIN_TRAITS instead of D.traits
-  var tr = window.ADMIN_TRAITS || {};
+  // CORRECTED LINE: Read from the unified master object (D.traits)
+  var tr = D.traits || {};
 
   /* Hero quote */
   var quoteEl = qs('.skills-hero-quote');
-  if (quoteEl && tr.heroQuote) quoteEl.textContent = tr.heroQuote;
+  if (quoteEl && tr.heroQuote) {
+    // Changed to innerHTML to allow HTML elements or formatting if needed
+    quoteEl.innerHTML = tr.heroQuote;
+  }
 
   /* Marquee strip */
   var track = el('skills-marquee-track');
@@ -1005,12 +1008,12 @@ function renderSkills() {
   var hobbies = tr.hobbies || [];
   if (hobbiesGrid && hobbies.length) {
     hobbiesGrid.innerHTML = hobbies.map(function (hobby) {
+      // Note: Kept unescaped so your '&nbsp;' emoji spacing spaces work correctly!
       return '<div class="skill-item"><div class="skill-item-name">' +
              hobby + '</div></div>';
     }).join('');
   }
 }
-
 
    /* ══════════════════════════════════════════════════════════
    CONTACT PAGE
