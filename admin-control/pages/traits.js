@@ -19,8 +19,8 @@ window.ADMIN_TRAITS = {
 
   /* ── Horizontally scrolling strip of words ─── */
   /*
-    Each string appears once; the track duplicates itself for seamless loop.
-    Mix skills, hobbies, and interests freely.
+     Each string appears once; the track duplicates itself for seamless loop.
+     Mix skills, hobbies, and interests freely.
   */
   marqueeItems: [
     'Public Speaking',
@@ -38,8 +38,8 @@ window.ADMIN_TRAITS = {
 
   /* ── Skills with progress bars ─── */
   /*
-    percent: 0 to 100 — controls the filled width of the bar.
-    The bar fill animates on page load.
+     percent: 0 to 100 — controls the filled width of the bar.
+     The bar fill animates on page load.
   */
   skills: [
     { name: 'Public Speaking',    percent: 85 },
@@ -53,8 +53,8 @@ window.ADMIN_TRAITS = {
 
   /* ── Hobbies & interests (shown below skills) ─── */
   /*
-    Start each with an emoji for the icon column effect.
-    These render as plain grid items — no progress bar.
+     Start each with an emoji for the icon column effect.
+     These render as plain grid items — no progress bar.
   */
   hobbies: [
     '🎵 &nbsp; Music & Vintage Records',
