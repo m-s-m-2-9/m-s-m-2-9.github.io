@@ -964,77 +964,82 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
 </section>
 
   
+<!-- PAGE: TRAITS / SKILLS -->
 <section id="page-skills" class="page" data-page="skills">
   <div class="page-inner">
     <div class="container section">
-      <div class="section-label reveal" id="traits-section-label">10 — Traits</div>
+      <div class="section-label reveal">10 — Traits</div>
       <h2 class="section-title reveal reveal-d1">Jack of all trades,<br>master of none — and that's the point.</h2>
 
-      <p class="skills-hero-quote reveal reveal-d2" id="traits-hero-quote">
-        </p>
+      
+      <p class="skills-hero-quote reveal reveal-d2">
+        "xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz."
+      </p>
 
       <div class="skills-marquee reveal reveal-d3">
-        <div class="marquee-track" id="skills-marquee-track"></div>
+        <div class="marquee-track" id="skills-marquee-track">
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Hobby<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Interest<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Hobby<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Interest<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Hobby<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Interest<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Skill<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Hobby<span class="marquee-dot">·</span></span>
+          <span class="marquee-item">xyz Interest<span class="marquee-dot">·</span></span>
+        </div>
       </div>
 
       <div class="skills-section-title reveal">Skills</div>
-      <div class="skills-grid reveal reveal-d1" id="skills-grid"></div>
+      <div class="skills-grid reveal reveal-d1" id="skills-grid">
+        <div class="skill-item" style="--skill-pct: 85%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-item" style="--skill-pct: 70%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-item" style="--skill-pct: 60%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-item" style="--skill-pct: 90%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-item" style="--skill-pct: 75%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-item" style="--skill-pct: 55%">
+          <div class="skill-item-name">xyz Skill — REPLACE</div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+      </div>
 
       <div class="divider"></div>
 
       <div class="skills-section-title reveal">Hobbies & Interests</div>
-      <div class="skills-grid reveal reveal-d2" id="hobbies-grid"></div>
+      <div class="skills-grid reveal reveal-d2">
+        <div class="skill-item"><div class="skill-item-name">🎵 &nbsp; xyz Hobby — REPLACE</div></div>
+        <div class="skill-item"><div class="skill-item-name">📚 &nbsp; xyz Hobby — REPLACE</div></div>
+        <div class="skill-item"><div class="skill-item-name">🎬 &nbsp; xyz Hobby — REPLACE</div></div>
+        <div class="skill-item"><div class="skill-item-name">✈️ &nbsp; xyz Hobby — REPLACE</div></div>
+        <div class="skill-item"><div class="skill-item-name">🎮 &nbsp; xyz Hobby — REPLACE</div></div>
+        <div class="skill-item"><div class="skill-item-name">📷 &nbsp; xyz Hobby — REPLACE</div></div>
+      </div>
     </div>
   </div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const traitData = window.ADMIN_TRAITS;
-      if (!traitData) return;
-
-      // Update Section Header and Large Hero Quote
-      if (traitData.sectionLabel) {
-        document.getElementById('traits-section-label').innerText = traitData.sectionLabel;
-      }
-      if (traitData.heroQuote) {
-        document.getElementById('traits-hero-quote').innerHTML = traitData.heroQuote;
-      }
-
-      // Populate Seamless Infinite Moving Marquee Track
-      const marqueeTrack = document.getElementById('skills-marquee-track');
-      if (marqueeTrack && traitData.marqueeItems) {
-        const createMarqueeString = () => traitData.marqueeItems.map(item => `
-          <span class="marquee-item">${item}<span class="marquee-dot">·</span></span>
-        `).join('');
-        // Double array strings allocation inside the DOM layout engine ensures zero clipping / gaps on translation loop restarts
-        marqueeTrack.innerHTML = createMarqueeString() + createMarqueeString();
-      }
-
-      // Populate Skills Metrics System Grid Mapping
-      const skillsGrid = document.getElementById('skills-grid');
-      if (skillsGrid && traitData.skills) {
-        skillsGrid.innerHTML = traitData.skills.map(skill => `
-          <div class="skill-item" style="--skill-pct: ${skill.percent}%">
-            <div class="skill-item-name">${skill.name}</div>
-            <div class="skill-bar"><div class="skill-bar-fill"></div></div>
-          </div>
-        `).join('');
-      }
-
-      // Populate Passive Hobbies Layout Grid Mapping
-      const hobbiesGrid = document.getElementById('hobbies-grid');
-      if (hobbiesGrid && traitData.hobbies) {
-        hobbiesGrid.innerHTML = traitData.hobbies.map(hobby => `
-          <div class="skill-item">
-            <div class="skill-item-name">${hobby}</div>
-          </div>
-        `).join('');
-      }
-    });
-  </script>
 </section>
 
-  
 <!-- PAGE: GAMES -->
 <section id="page-games" class="page" data-page="games">
   <div class="page-inner">
