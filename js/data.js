@@ -1034,7 +1034,7 @@ function renderContact() {
   }
 }
    
-  /* ══════════════════════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════════════════════
      INIT — runs on DOMContentLoaded
      Homepage content always renders immediately.
      All other pages render lazily (on first visit).
@@ -1044,6 +1044,19 @@ function renderContact() {
     initEmailJS();
     renderHero();
     renderHeroLinks();
+
+    // ─── CRITICAL TRAITS FIX ────────────────────────────────────────
+    // We run this inside a try/catch block. If another script has crashed 
+    // the global environment, this will jump right over it and inject your data anyway.
+    try {
+      renderSkills();
+      if (window.MSM && typeof window.MSM.animateSkillBars === 'function') {
+        window.MSM.animateSkillBars();
+      }
+    } catch (e) {
+      console.warn('[MSM] Immediate skills render fallback triggered:', e);
+    }
+    // ────────────────────────────────────────────────────────────────
 
     /* Render the page that is currently active */
     var activePage = document.querySelector('.page.active[data-page]');
