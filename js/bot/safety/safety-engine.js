@@ -34,15 +34,21 @@ function isPaused(){return Date.now()<getPU();}
 
 function rnd(a){return a[Math.floor(Math.random()*a.length)];}
 
-/* ── Load patterns from config or use base patterns ─────── */
+/* ── Load patterns: BASE (built-in) + config-safety.js additions ──
+   ALWAYS concatenated, NEVER replaced. This guarantees that adding
+   entries in admin-control/.../config-safety.js can only ADD
+   coverage \u2014 it can never accidentally remove or shadow the
+   built-in abuse/spam/locked detection. ─────────────────────── */
 function getPatterns(tier) {
   const cfg = SC();
-  return (cfg.patterns && cfg.patterns[tier]) || BASE_PATTERNS[tier] || [];
+  const extra = (cfg.patterns && cfg.patterns[tier]) || [];
+  return [...(BASE_PATTERNS[tier] || []), ...extra];
 }
 
 function getResponses(pool) {
   const cfg = SC();
-  return (cfg.responses && cfg.responses[pool]) || BASE_RESPONSES[pool] || [];
+  const extra = (cfg.responses && cfg.responses[pool]) || [];
+  return [...(BASE_RESPONSES[pool] || []), ...extra];
 }
 
 /* ── BASE PATTERNS (overridable from config-safety.js) ───── */
