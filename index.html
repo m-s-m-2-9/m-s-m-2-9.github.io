@@ -1312,7 +1312,6 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
 <script src="js/roro-intro.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-
 <!-- ═══════════════════════════════════════════════════════
      ADMIN CONTROL SYSTEM
      Edit your content in the admin-control/ folder.
@@ -1327,7 +1326,8 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
 <script src="admin-control/buttons/nav.js"></script>
 <script src="admin-control/buttons/home.js"></script>
 <script src="admin-control/pages/home.js"></script>
-<script src="admin-control/pages/identity.js"></script>
+
+  
 <script src="admin-control/pages/cv.js"></script>
 <script src="admin-control/pages/social.js"></script>
 <script src="admin-control/pages/profiles.js"></script>
@@ -1345,11 +1345,45 @@ Beyond the classroom, I served as the Media Lead, capturing the camp's energy th
 <script src="js/main.js"></script>
 <script src="js/baseball-game.js"></script>
   
-<script src="admin-control/crazy/bot/manager-roro.js"></script>
-     <script src="js/bot/roro-safety.js"></script>
-     <script src="js/bot/roro-web.js"></script>
-     <script src="js/bot/roro-intelligence.js"></script>
-     <script src="js/bot/manager-roro.js"></script>
+<!-- ════════ 1. ADMIN CONFIG (loads first — pure data, no logic) ════════ -->
+<script src="admin-control/crazy/bot/manager-roro.js"></script>           <!-- existing RORO_CONFIG -->
+<script src="admin-control/crazy/bot/config/config-ai.js"></script>       <!-- NEW -->
+<script src="admin-control/crazy/bot/config/config-safety.js"></script>   <!-- NEW -->
+<script src="admin-control/crazy/bot/knowledge/profile.js"></script>      <!-- NEW -->
+<script src="admin-control/crazy/bot/knowledge/skills.js"></script>       <!-- NEW -->
+<script src="admin-control/crazy/bot/knowledge/projects.js"></script>     <!-- NEW -->
+
+<!-- ════════ 2. UTILS (everything below depends on these) ════════ -->
+<script src="js/bot/utils/constants.js"></script>   <!-- NEW — load FIRST of all js/bot files -->
+<script src="js/bot/utils/cache.js"></script>       <!-- NEW -->
+<script src="js/bot/utils/text.js"></script>        <!-- NEW -->
+
+<!-- ════════ 3. WEB SOURCES + ENGINE (overrides old roro-web.js) ════════ -->
+<script src="js/bot/web/web-wikipedia.js"></script>  <!-- NEW -->
+<script src="js/bot/web/web-wikidata.js"></script>   <!-- NEW -->
+<script src="js/bot/web/web-ddg.js"></script>        <!-- NEW -->
+<script src="js/bot/web/web-weather.js"></script>    <!-- NEW -->
+<script src="js/bot/web/web-countries.js"></script>  <!-- NEW -->
+<script src="js/bot/web/web-books.js"></script>      <!-- NEW -->
+<script src="js/bot/web/web-engine.js"></script>     <!-- NEW — sets window.RoRoWeb -->
+
+<!-- ════════ 4. SAFETY (overrides old roro-safety.js) ════════ -->
+<script src="js/bot/safety/safety-engine.js"></script>  <!-- NEW — sets window.RoRoSafety -->
+
+<!-- ════════ 5. AI CASCADE ════════ -->
+<script src="js/bot/ai/ai-fallback.js"></script>     <!-- NEW -->
+<script src="js/bot/ai/ai-prompts.js"></script>      <!-- NEW -->
+<script src="js/bot/ai/ai-gemini.js"></script>       <!-- NEW -->
+<script src="js/bot/ai/ai-groq.js"></script>         <!-- NEW -->
+<script src="js/bot/ai/ai-openrouter.js"></script>   <!-- NEW -->
+<script src="js/bot/ai/ai-engine.js"></script>       <!-- NEW -->
+
+<!-- ════════ 6. EXISTING CORE (UI/UX — untouched) ════════ -->
+<script src="js/bot/roro-intelligence.js"></script>  <!-- existing v4, unchanged -->
+<script src="js/bot/manager-roro.js"></script>       <!-- existing v2, unchanged -->
+
+<!-- ════════ 7. BRIDGE — MUST BE ABSOLUTE LAST ════════ -->
+<script src="js/bot/core/roro-bridge-v5.js"></script>  <!-- NEW — wires everything together -->
 
 <script src="js/nav-reel.js"></script>
 <script src="js/home-parallax.js"></script>
