@@ -68,7 +68,8 @@ window.ADMIN_GAMES = {
   ],
 
   /* ── Private / Family Games ──────────────────────────────────────── */
-  privateGames: [
+privateGames: [],
+   /*  privateGames: [
     {
       icon    : `<svg xmlns="http://w3.org" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <rect x="2" y="6" width="20" height="12" rx="2"/>
@@ -76,7 +77,7 @@ window.ADMIN_GAMES = {
 </svg>`,
       name    : 'Private Game 1 — REPLACE',
       desc    : 'A personal game for family only. Replace this description.',
-      linkType: 'github',        /* ← 'github' or 'apk' */
+      linkType: 'github',         ← 'github' or 'apk' 
       url     : 'YOUR_GITHUB_LINK_HERE',
     },
     {
@@ -89,6 +90,6 @@ window.ADMIN_GAMES = {
       linkType: 'apk',
       url     : 'YOUR_APK_LINK_HERE',
     },
-  ],
+  ], */
 
-};
+}; 
