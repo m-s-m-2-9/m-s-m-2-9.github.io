@@ -47,6 +47,6 @@ It is an archive of thought, growth, experiments, memories, aesthetics, and the 
     from admin-control/other/passwords.js → about.
     Write whatever you want here — it's private.
   */
-  secretText: 'Your private story goes here. ----------------------REPLACEEEEE------------------------This is only visible to people with the password.',
+  secretText: '',
 
 };
