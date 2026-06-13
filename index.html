@@ -35,7 +35,7 @@
 <body>
 
 <!-- ═══════════════════════════════════════════════════════
-     LOADING SCREEN (commented out — roro-intro.js handles)
+     LOADING SCREEN (commented out — roro-intro.js handles everything now yay! )
 ═══════════════════════════════════════════════════════ -->
 <!--
 <div id="loading-screen">
@@ -45,13 +45,18 @@
   </div>
   <div class="loading-pct" id="loading-pct">0%</div>
 </div>
--->
+
+  THIS THING CAN BE DELETED BUT I WILL NOT
+  
+  -->
+
+
 
 <!-- roro-intro.js splash cover — removed by intro script after animation -->
 <div id="roro-cover" style="position:fixed;inset:0;z-index:9999999;background:var(--bg,#080808)"></div>
 
 <!-- ═══════════════════════════════════════════════════════
-     CUSTOM CURSOR
+     CUSTOM CURSOR LOOKS COOL HEHE
 ═══════════════════════════════════════════════════════ -->
 <div id="cursor-dot"></div>
 <div id="cursor-ring"></div>
@@ -85,19 +90,18 @@
 <!-- ═══════════════════════════════════════════════════════
      NAVIGATION BAR
      ─────────────────────────────────────────────────────
-     SIDEBAR CHANGE ①:
+     SIDEBAR CHANGE 1:
      Added  data-desktop-nav  to .nav-right so that
      sidebar-controller.js → findDesktopNav() correctly
      locates this container and appends the desktop
      hamburger button after the theme dots.
-     Nothing else in this nav block is changed.
 ═══════════════════════════════════════════════════════ -->
 <nav id="nav">
 
-  <!-- Brand logo — always navigates home -->
+  <!-- MSM logo — always navigates home -->
   <a href="#" class="nav-logo" onclick="navigateTo('home'); return false;">MSM</a>
 
-  <!-- Desktop page links (hidden on mobile via nav.css) -->
+  <!-- Desktop page links (hidden on mobile via nav.css) due to small screen-->
   <ul class="nav-links" id="nav-links">
     <li><a href="#" onclick="navigateTo('home');     return false;">Home</a></li>
     <li><a href="#" onclick="navigateTo('about');    return false;">Identity</a></li>
@@ -110,16 +114,16 @@
 
   <!--
     ┌─────────────────────────────────────────────────────┐
-    │  data-desktop-nav  ← SIDEBAR CHANGE ①               │
+    │  data-desktop-nav  ← SIDEBAR CHANGE                 │
     │  sidebar-controller.js reads this attribute to      │
     │  locate the correct container for hamburger inject. │
     │  All existing children (music, theme, hamburger)    │
-    │  are 100% unchanged.                                │
+    │  exist without change                               │
     └─────────────────────────────────────────────────────┘
   -->
   <div class="nav-right" data-desktop-nav>
 
-    <!-- Background music toggle — play/pause only -->
+    <!-- Background music toggle — play/pause button in nav bar -->
     <button class="music-toggle muted" id="music-toggle" title="Play / Pause music">
       <div class="sound-bars">
         <span></span>
@@ -128,7 +132,7 @@
       </div>
     </button>
 
-    <!-- Theme colour switcher — 4 dots -->
+    <!-- Theme colour switcher — 4 dots in nav bar -->
     <div class="theme-switcher">
       <div class="theme-dot active" data-t="dark"   title="Noir"   onclick="setTheme('dark');   document.documentElement.style.setProperty('--ruin-color','rgba(200,220,255,0.5)')"></div>
       <div class="theme-dot"        data-t="light"  title="Ivory"  onclick="setTheme('light');  document.documentElement.style.setProperty('--ruin-color','rgba(80,80,80,0.4)')"></div>
@@ -137,9 +141,9 @@
     </div>
 
     <!--
-      MOBILE hamburger — unchanged.
+      MOBILE hamburger
       Only visible on mobile (display:none on desktop via nav.css).
-      sidebar-controller.js NEVER touches this element.
+      sidebar-controller.js NEVER touches this element. DO NOT CHANGE FOR COMPUTER
     -->
     <div class="hamburger" id="hamburger" onclick="toggleMobileNav()">
       <span></span>
@@ -161,7 +165,7 @@
 
 <!-- ═══════════════════════════════════════════════════════
      MOBILE NAV OVERLAY
-     Untouched — sidebar-controller.js never touches this
+     sidebar-controller.js never touches this DO NOT TOUCH THIS UNTIL MAJOR CHANGE NEEDED
 ═══════════════════════════════════════════════════════ -->
 <div id="mobile-nav">
   <a href="#" onclick="navigateTo('home');     toggleMobileNav(); return false;">Home</a>
@@ -184,13 +188,12 @@
 <!-- ═══════════════════════════════════════════════════════
      ALL PAGES
      ─────────────────────────────────────────────────────
-     SIDEBAR CHANGE ②:
-     Added  data-page="pageId"  to every <section> element.
+     SIDEBAR:
+     Added  data-page="pageId"  to every <section> element. APR 28
      sidebar-controller.js → detectActivePage() reads these
      to know which page is active and light the correct
      right-side indicator line in the sidebar.
-     The active class, page-inner, and all content inside
-     every section is 100% unchanged.
+     The active class, page-inner, and all content inside.
 ═══════════════════════════════════════════════════════ -->
 
 <!-- PAGE: HOME -->
@@ -216,7 +219,7 @@
 
       <!-- Tagline — text set by data.js from admin-control/pages/home.js → tagline -->
       <p class="hero-tagline" id="hero-tagline">
-        Born 2008 · Mumbai · Making something of it all
+        Born 2008 · Banglore · Making something of it all
       </p>
 
       <!-- Nav hint — set by data.js from admin-control/pages/home.js → navHint -->
@@ -308,7 +311,7 @@
             <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1rem;">
               There's a hidden layer here. Enter the password to read the real story.
             </p>
-            <!-- CHANGE: added 'about' as third arg — password key from admin-control/other/passwords.js -->
+            <!-- Added 'about' as third arg — password key from admin-control/other/passwords.js -->
             <div class="inline-password-form">
               <input type="password" id="about-pw" placeholder="password" autocomplete="off"
                 onkeydown="if(event.key==='Enter')unlockSection('about-pw','secret-about-content','about')" />
