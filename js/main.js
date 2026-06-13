@@ -324,70 +324,76 @@ setTimeout(() => triggerPageReveals('home'), 1500);
 /* ═══════════════════════════════════════════════════════════
    PASSWORD SYSTEM
 ═══════════════════════════════════════════════════════════ */
-let gateTargetPage = null;
- 
-/* CHANGE: Added pwKey parameter.
-   Now checks the per-section password from admin-control/other/passwords.js first.
-   If no per-section password is set, falls back to the master password.
-   Edit passwords in: admin-control/other/passwords.js
-   Example: unlockSection('about-pw', 'secret-about-content', 'about')
-            → checks D.passwords.about, then falls back to D.passwords.master */
-function unlockSection(inputId, contentId, pwKey) {
+async function unlockSection(inputId, contentId, pwKey) {
+
   const input   = document.getElementById(inputId);
   const content = document.getElementById(contentId);
+
   if (!input || !content) return;
 
-  /* Per-section password takes priority over master password */
-  const _D = window.MSM_DATA || {};
-  const perSectionPw = pwKey && _D.passwords && _D.passwords[pwKey];
-  const correctPw    = perSectionPw || CONFIG.MASTER_PASSWORD;
+  try {
 
-  if (input.value === correctPw) {
-    content.classList.add('unlocked');
-    content.style.display = 'block';
-    const form = input.closest('.inline-password-form');
-    if (form) { form.style.opacity = '0.3'; form.style.pointerEvents = 'none'; }
-  } else {
+    const response = await fetch(
+      'https://msm-secrets.manomaysmisra2908.workers.dev/',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          section: pwKey,
+          password: input.value
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.success) {
+
+      content.classList.add('unlocked');
+      content.style.display = 'block';
+
+      if (data.content) {
+        content.innerHTML = `<p class="about-body" style="margin-top:1.5rem;">${data.content}</p>`;
+      }
+
+      const form = input.closest('.inline-password-form');
+
+      if (form) {
+        form.style.opacity = '0.3';
+        form.style.pointerEvents = 'none';
+      }
+
+    } else {
+
+      input.classList.add('error');
+      input.value = '';
+      input.placeholder = 'Wrong password ✗';
+
+      setTimeout(() => {
+        input.classList.remove('error');
+        input.placeholder = 'password';
+      }, 1500);
+
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
     input.classList.add('error');
-    input.value       = '';
-    input.placeholder = 'Wrong password ✗';
+    input.value = '';
+    input.placeholder = 'Connection error';
+
     setTimeout(() => {
       input.classList.remove('error');
       input.placeholder = 'password';
     }, 1500);
+
   }
+
 }
- 
-function tryLockedPage(pageId) {
-  gateTargetPage = pageId;
-  document.getElementById('password-gate').classList.add('visible');
-  setTimeout(() => document.getElementById('gate-input').focus(), 300);
-}
- 
-function closeGate() {
-  document.getElementById('password-gate').classList.remove('visible');
-  document.getElementById('gate-input').value = '';
-  document.getElementById('gate-error').classList.remove('show');
-  gateTargetPage = null;
-}
- 
-function submitGate() {
-  const input  = document.getElementById('gate-input');
-  const target = gateTargetPage;
-  if (input.value === CONFIG.MASTER_PASSWORD) {
-    closeGate();
-    if (target) doTransition(target);
-  } else {
-    input.classList.add('error');
-    document.getElementById('gate-error').classList.add('show');
-    input.value = '';
-    setTimeout(() => input.classList.remove('error'), 500);
-  }
-}
- 
-document.getElementById('gate-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') submitGate();
-});
  
 /* ═══════════════════════════════════════════════════════════
    MOBILE NAV
