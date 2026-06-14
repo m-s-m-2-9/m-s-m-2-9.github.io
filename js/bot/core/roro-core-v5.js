@@ -12,7 +12,7 @@
         calls stopPropagation() — old code never sees the event.
      2. Does its OWN safety check, ack/math detection, "who are
         you"/"who is Manomay" detection, navigation, theme, and
-        music handling — all instant, no AI needed.
+        music handling — all instant, no  needed.
      3. For everything else, calls window.RoRoAIEngine.run() (the
         v5 cascade: Gemini → Groq → OpenRouter → Web → Site → Offline).
      4. Renders messages/typing/options using ONLY the stable CSS
@@ -40,19 +40,20 @@
   const TAG = '[RoRo v5]';
 
   /* ════════════════════ SELF-HEALING CONFIG ════════════════════
-     If admin-control config files (config-ai.js) didn't load — or
-     loaded with empty keys — the AI cascade silently SKIPS Gemini/
-     Groq/OpenRouter entirely (their `if (keys.x)` guards are false),
-     and EVERYTHING falls straight to raw web search. That's why
-     general questions were returning unrelated Wikipedia articles
-     with no portfolio redirect. This guarantees keys exist either
-     way, without overwriting anything that DID load correctly. */
+     Guarantees the apiKeys OBJECT exists (so ai-engine.js's getKeys()
+     never throws), without ever INJECTING specific key values.
+
+     PREVIOUSLY this block also injected fallback key strings if a key
+     was empty -- removed. Console diagnostics confirmed config-ai.js
+     DOES load (keys present: true for all 3), so that fallback never
+     even fired. Worse, if you ever intentionally clear a dead key in
+     config-ai.js (e.g. set gemini:'' while waiting for a new one),
+     this would have silently put the OLD DEAD KEY back, causing every
+     message to waste ~8s on a guaranteed 401 before moving on.
+     Now: empty key in config-ai.js -> that tier is cleanly skipped. */
   window.RORO_AI_CONFIG = window.RORO_AI_CONFIG || {};
   window.RORO_AI_CONFIG.apiKeys = window.RORO_AI_CONFIG.apiKeys || {};
   var _K = window.RORO_AI_CONFIG.apiKeys;
-  if (!_K.gemini)     _K.gemini     = 'AQ.Ab8RN6I92qhXWnCoY5dAGA1BEnMtwsvYN1viahWWu3zF9_6fMw';
-  if (!_K.groq)       _K.groq       = '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';
-  if (!_K.openrouter) _K.openrouter = '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';
   if (!window.RORO_AI_CONFIG.personality) {
     window.RORO_AI_CONFIG.personality = "You are RoRo, the website manager and AI assistant for Manomay Shailendra Misra's personal portfolio. You are minimal, calm, slightly witty, and never over-enthusiastic. For general questions unrelated to the website, give a brief helpful answer (2-3 sentences) then smoothly mention the portfolio. Never hallucinate \u2014 if something isn't in your facts, say so honestly.";
   }
@@ -119,6 +120,14 @@
   var SUPPL_HARD_RE = /\b(?:bsdk|nigg(?:a|er)s?)\b/i;
   var SUPPL_EXTREME_RE = /\b(?:fuck(?:ed|ing)?|rape[d]?|molest(?:ed)?)\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b/i;
 
+  /* Catches elongated/emphasised profanity directed at the bot
+     (e.g. "fuckkkkkkk offfffff", "piece of shittttt") that the base
+     \bfuck\b-style patterns miss because \b requires a clean word
+     boundary right after "fuck"/"shit" -- extra repeated letters break
+     that boundary. Tested against `normText` below (3+ repeats
+     collapsed to 2), where letter+ quantifiers match cleanly. */
+  var SUPPL_ELONGATED_PROFANITY_RE = /\bf+u+c+k+\s+(?:y+o+u+|o+f+f*|t+h+i+s+|i+t+|t+h+a+t+|r+o+r+o+)\b|\bp+i+e+c+e+\s+o+f+\s+s+h+i+t+\b|\bf+u+c+k+i+n+g+\s+\w*(?:s+t+u+p+i+d+|i+d+i+o+t+|b+o+t+|u+s+e+l+e+s+)\b/i;
+
   function detectNav(text) {
     const C = window.RORO_CONFIG || {};
     const pages = C.pages || {};
@@ -127,7 +136,10 @@
     if (!verb) return null;
     for (const [id, pg] of Object.entries(pages)) {
       const label = (pg.label || id).toLowerCase();
-      if (lower.includes(id) || (label.length > 2 && lower.includes(label))) return id;
+      /* Match singular/plural variants both ways -- RORO_CONFIG.pages
+         uses ids like "profiles" but visitors say "show me profile". */
+      const idAlt = id.endsWith('s') ? id.slice(0, -1) : id + 's';
+      if (lower.includes(id) || lower.includes(idAlt) || (label.length > 2 && lower.includes(label))) return id;
     }
     /* also catch DOM-detected pages without explicit config entries */
     const domPages = document.querySelectorAll('[id^="page-"]');
@@ -261,9 +273,72 @@
     }
 
     /* ════════════════ MAIN ROUTER ════════════════ */
+    /* ════════════════ AI-FIRST WITH POOL FALLBACK ════════════════
+       Used for "who are you" / "who is Manomay" -- tries the real AI
+       cascade FIRST (so answers are generated, varied, and grounded
+       in admin/knowledge facts). The hardcoded pool is used ONLY as a
+       genuine last-resort, i.e. when ALL of Gemini/Groq/OpenRouter are
+       unavailable (result.tier is 'web'/'offline_site'/'offline' --
+       which would otherwise mean random Wikipedia or a project dump
+       for these intents). This satisfies "answer using AI" while
+       staying functional if every AI key is ever down again. */
+    async function aiOrFallback(promptText, fallbackPool, afterFn) {
+      if (!window.RoRoAIEngine) {
+        addBotMsg(rnd(fallbackPool), afterFn);
+        return;
+      }
+
+      const typing = addTypingIndicator();
+      const UI = (window.RORO_CONST && window.RORO_CONST.UI) || {};
+      const switchMs = UI.THINKING_SWITCH_MS || 3000;
+      const switchTimer = setTimeout(() => {
+        const bubble = typing.querySelector('.roro-bubble');
+        if (bubble && typing.parentNode) {
+          bubble.innerHTML = '<span style="font-size:0.78rem;opacity:0.7">Thinking...</span>';
+        }
+      }, switchMs);
+
+      const contextData = { visitorName: getVisitorName(), currentPage: getCurrentPage() };
+      let replyText, navigate;
+
+      try {
+        const result = await window.RoRoAIEngine.run(promptText, contextData);
+        clearTimeout(switchTimer);
+        if (typing.parentNode) typing.remove();
+
+        const realAI = result && (result.tier === 'gemini' || result.tier === 'groq' || result.tier === 'openrouter');
+        console.log(TAG, 'route: aiOrFallback -> tier:', result && result.tier, realAI ? '(using AI text)' : '(using fallback pool)');
+
+        if (realAI && result.text) { replyText = result.text; navigate = result.navigate; }
+        else { replyText = rnd(fallbackPool); }
+      } catch (e) {
+        clearTimeout(switchTimer);
+        if (typing.parentNode) typing.remove();
+        console.warn(TAG, 'aiOrFallback error:', e);
+        replyText = rnd(fallbackPool);
+      }
+
+      window.RoRoIntelligence.SessionMemory.addMessage('user', text);
+      window.RoRoIntelligence.SessionMemory.addMessage('bot', replyText);
+
+      addBotMsg(replyText, () => {
+        if (navigate && typeof window.navigateTo === 'function') window.navigateTo(navigate);
+        if (afterFn) afterFn();
+      });
+    }
+
     async function route(rawText) {
       const text = (rawText || '').trim();
       if (!text) return;
+
+      /* Normalised copy for abuse/safety pattern matching ONLY.
+         Collapses any run of 3+ identical characters down to 2, so
+         "fuckkkkkkkkkkk offfffffff...shittttttt" -> "fuckk offf...shitt".
+         This lets letter+ patterns (f+u+c+k+ etc) match elongated/
+         emphasised typing while leaving normal doubled letters
+         (off, all, will, annoying) untouched. Navigation, theme,
+         math, and AI all still use the ORIGINAL `text`. */
+      const normText = text.toLowerCase().replace(/(.)\1{2,}/g, '$1$1');
 
       /* 1 ── SAFETY (uses v5 safety-engine if present) ─────────
          NOTE: a known false-positive in some deployed copies of
@@ -274,7 +349,7 @@
          handled normally below — only the SPAM catch-all is ignored. */
       if (window.RoRoSafety) {
         try {
-          const s = window.RoRoSafety.check(text);
+          const s = window.RoRoSafety.check(normText);
           if (!s.safe && s.type !== 'SPAM') {
             console.log(TAG, 'route: safety ->', s.type);
             if (!s.silent && s.response) addBotMsg(s.response);
@@ -285,12 +360,12 @@
       }
 
       /* 1b ── SUPPLEMENTARY ABUSE CHECK (independent of safety-engine) */
-      if (SUPPL_EXTREME_RE.test(text)) {
+      if (SUPPL_EXTREME_RE.test(normText)) {
         console.log(TAG, 'route: supplemental extreme');
         addBotMsg("That's not a conversation I'll have. Full stop.");
         return;
       }
-      if (SUPPL_HARD_RE.test(text)) {
+      if (SUPPL_HARD_RE.test(normText) || SUPPL_ELONGATED_PROFANITY_RE.test(normText)) {
         console.log(TAG, 'route: supplemental hard');
         addBotMsg("Let's keep it clean — I'll help with anything reasonable.");
         return;
@@ -315,17 +390,25 @@
         }
       }
 
-      /* 4 ── "WHO ARE YOU" (about RoRo) ───────────────────────── */
+      /* 4 ── "WHO ARE YOU" (about RoRo) -- AI-first, pool fallback ── */
       if (ABOUT_RORO_RE.test(text)) {
-        console.log(TAG, 'route: about-roro');
-        addBotMsg(rnd(WHO_ARE_YOU_POOL), () => renderOptions(['What can you do?', 'Who is Manomay?', 'Show me Projects']));
+        console.log(TAG, 'route: about-roro -> AI-first');
+        await aiOrFallback(
+          "The visitor asked who/what you are. Introduce yourself as RoRo, Manomay's AI website assistant -- mention you know this portfolio well and can chat about other things too. Keep it natural and fresh, 1-2 sentences.",
+          WHO_ARE_YOU_POOL,
+          () => renderOptions(['What can you do?', 'Who is Manomay?', 'Show me Projects'])
+        );
         return;
       }
 
-      /* 5 ── "WHO IS MANOMAY" ─────────────────────────────────── */
+      /* 5 ── "WHO IS MANOMAY" -- AI-first, pool fallback ─────────── */
       if (WHO_IS_MANOMAY_RE.test(text)) {
-        console.log(TAG, 'route: who-is-manomay');
-        addBotMsg(rnd(WHO_IS_MANOMAY_POOL), () => renderOptions(['Show me Projects', 'Show me the Journey', 'What has he achieved?']));
+        console.log(TAG, 'route: who-is-manomay -> AI-first');
+        await aiOrFallback(
+          "The visitor is asking who Manomay is. Introduce him using the facts provided -- vary your wording and sentence structure each time, don't repeat the same phrasing. 1-2 sentences.",
+          WHO_IS_MANOMAY_POOL,
+          () => renderOptions(['Show me Projects', 'Show me the Journey', 'What has he achieved?'])
+        );
         return;
       }
 
