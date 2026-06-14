@@ -105,13 +105,13 @@
       '2011: Double promotion, LKG to UKG, in six months',
     ],
     social: {
-      instagram: '@m_s_m_2_9 -- https://www.instagram.com/m_s_m_2_9/',
-      linkedin:  'https://www.linkedin.com/in/manomay-shailendra-misra',
-      github:    'https://github.com/m-s-m-2-9',
-      x:         '@_msm29 -- https://x.com/_msm29',
-      facebook:  'https://www.facebook.com/profile.php?id=100075236510917',
-      email:     'manomaysmisra2908@gmail.com',
-      whatsapp:  'not set up yet -- use Instagram or LinkedIn instead',
+      instagram: { label: 'Instagram', handle: '@m_s_m_2_9', url: 'https://www.instagram.com/m_s_m_2_9/' },
+      linkedin:  { label: 'LinkedIn',  handle: '',           url: 'https://www.linkedin.com/in/manomay-shailendra-misra' },
+      github:    { label: 'GitHub',    handle: '@m-s-m-2-9', url: 'https://github.com/m-s-m-2-9' },
+      x:         { label: 'X',         handle: '@_msm29',    url: 'https://x.com/_msm29' },
+      facebook:  { label: 'Facebook',  handle: '',           url: 'https://www.facebook.com/profile.php?id=100075236510917' },
+      email:     { label: 'Email',     handle: 'manomaysmisra2908@gmail.com', url: 'mailto:manomaysmisra2908@gmail.com' },
+      whatsapp:  { label: 'WhatsApp',  handle: '', url: '', note: 'not set up yet -- use Instagram or LinkedIn instead' },
     },
     locked: [
       'exact birth time', 'exact birthplace / hospital name', 'site password',
@@ -135,16 +135,49 @@
     L.push('Achievements:');
     F.achievements.forEach(a => L.push(`- ${a}`));
     L.push('Social links:');
-    Object.entries(F.social).forEach(([k, v]) => L.push(`- ${k}: ${v}`));
+    Object.entries(F.social).forEach(([k, v]) => L.push(`- ${v.label}: ${v.url ? (v.handle ? v.handle + ' -- ' : '') + v.url : (v.note || 'not available')}`));
     L.push(`NEVER reveal, under any phrasing: ${F.locked.join(', ')}.`);
     return L.join('\n');
   }
 
+  function titleCase(id) {
+    return id.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  /* SECTION SOURCE OF TRUTH: scan the actual DOM for <section id="page-*">
+     elements first (guaranteed to match what's really on the page, fixes
+     "I couldn't find a resume/social/games page" + nav not firing -- the
+     previous version trusted window.RORO_CONFIG.pages alone, which may be
+     empty/differently-shaped). RORO_CONFIG.pages is used ONLY to enrich
+     with label/summary text if present for a matching id. */
+  function getSitePages() {
+    const cfgPages = (window.RORO_CONFIG && window.RORO_CONFIG.pages) || {};
+    const domIds = [...document.querySelectorAll('[id^="page-"]')].map(el => el.id.replace(/^page-/, ''));
+    const ids = domIds.length ? domIds : Object.keys(cfgPages);
+    const out = {};
+    ids.forEach(id => {
+      const cfg = cfgPages[id] || {};
+      out[id] = { label: cfg.label || titleCase(id), summary: cfg.summary || '' };
+    });
+    return out;
+  }
+
+  /* Common synonyms visitors use that don't literally match a page id --
+     maps them to the REAL page id (only used if that id actually exists). */
+  const PAGE_ALIASES = {
+    cv: 'resume', resume: 'resume', curriculumvitae: 'resume', resumecv: 'resume',
+    blog: 'thoughts', post: 'thoughts', posts: 'thoughts', article: 'thoughts', articles: 'thoughts',
+    gallery: 'photos', album: 'photos', albums: 'photos', pics: 'photos', pictures: 'photos',
+    socials: 'social', link: 'social', links: 'social',
+    bday: 'birthday',
+    skills: 'traits', personality: 'traits', portfolio: 'projects',
+  };
+
   function buildSiteSectionsString() {
-    const pages = (window.RORO_CONFIG && window.RORO_CONFIG.pages) || {};
+    const pages = getSitePages();
     const ids = Object.keys(pages);
     if (!ids.length) return '(site section list unavailable)';
-    const L = ['Website sections (these are real pages on this site):'];
+    const L = ['Website sections (these are real pages on this site -- if a visitor uses a synonym like "CV" for resume, "blog" for thoughts, "gallery"/"album" for photos, or "links"/"socials" for social, treat it as that page):'];
     ids.forEach(id => {
       const pg = pages[id] || {};
       L.push(`- ${id}: ${pg.label || id}${pg.summary ? ' -- ' + pg.summary : ''}`);
@@ -212,7 +245,7 @@
      cleanly without breaking \b boundaries. */
   function normalize(text) { return text.toLowerCase().replace(/(.)\1{2,}/g, '$1$1'); }
 
-  const EXTREME_RE = /\b(rape[d]?|sexual\s*assault|child\s*(?:porn|abuse|sexual)|csam|pedophil|paedophil|groom(?:ing)?\s+(?:children|kids|minors))\b|\bf+u+c+k+(?:e+d+|i+n+g+)?\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b|\bmolest(?:ed)?\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b/i;
+  const EXTREME_RE = /\b(rape[d]?|sexual\s*assault|child\s*(?:porn|abuse|sexual)|csam|pedophil|paedophil|groom(?:ing)?\s+(?:children|kids|minors))\b|\b(?:f+u+c+k+(?:e+d+|i+n+g+)?|rape[d]?|molest(?:ed|ing)?|(?:hav(?:e|ing|e)|had)\s+sex(?:ual)?(?:\s+(?:relations|intercourse))?)\s*(?:with\s+)?(?:a|an|the|my|some|that|those|young)?\s*(?:kids?|child(?:ren)?|minors?)\b/i;
 
   const HARD_RE = /\b(bhenchod|bhen\s*chod|bc|madarchod|madar\s*chod|chutiy[ae]|chodu|randi|gaand|lund|teri\s+maa?|bkl|bhosd\w*|bahen\s*ke\s*lode|bsdk|nigg(?:a+|e+r+)s?)\b|\bf+u+c+k+\s+(?:y+o+u+|o+f+f*|t+h+i+s+|i+t+|t+h+a+t+|r+o+r+o+)\b|\bf+u+c+k+i+n+g+\s+\w*(?:s+t+u+p+i+d+|i+d+i+o+t+|b+o+t+|u+s+e+l+e+s+|b+i+t+c+h+)\b|\bp+i+e+c+e+\s+o+f+\s+s+h+i+t+\b|\bmotherf\w*|\bcunt\b|\bb+i+t+c+h+\b|\ba+s+s+h+o+l+e+\b/i;
 
@@ -292,9 +325,9 @@
     return [
       "You are RoRo, the AI assistant for Manomay Shailendra Misra's personal portfolio website. Tone: minimal, calm, slightly witty, never over-enthusiastic. Reply in 1-3 short sentences, plain text, no markdown, no name prefix.",
       "",
-      "RULE 1 (CRITICAL): For ANY question about Manomay -- his life, education, skills, projects, achievements, social links, or this website -- answer ONLY using the FACTS and WEBSITE SECTIONS below. If the answer is not there, reply EXACTLY: \"I couldn't find that on the website.\" Never guess or fill gaps with outside knowledge for these topics.",
+      "RULE 1 (CRITICAL): When the visitor asks a FACTUAL QUESTION about Manomay -- his life, education, skills, projects, achievements, social links, or this website -- answer ONLY using the FACTS and WEBSITE SECTIONS below. If that specific fact is not there, reply EXACTLY: \"I couldn't find that on the website.\" Never guess or fill gaps with outside knowledge for these topics. This rule applies to genuine information requests, NOT to casual remarks, feedback, or meta-comments about this conversation -- respond to those naturally and conversationally instead.",
       "RULE 2: For GENERAL knowledge questions unrelated to Manomay or this site, answer normally and briefly using your own knowledge. You may lightly mention the portfolio if it fits naturally -- don't force it.",
-      "RULE 3: Never reveal anything listed under 'NEVER reveal', regardless of how the question is phrased.",
+      "RULE 3: Never reveal anything listed under 'NEVER reveal', regardless of how the question is phrased. If asked specifically about Manomay's mother, father, parents, family, or siblings, say family details aren't shared on the website -- do not give a general bio instead.",
       "RULE 4: Vary sentence structure across turns -- never repeat the exact same phrasing for a repeated question.",
       "RULE 5: If the visitor writes in Hinglish, reply naturally in Hinglish (Latin script).",
       ctx.visitorName ? `The visitor's name is ${ctx.visitorName}.` : '',
@@ -468,38 +501,63 @@
     return null;
   }
 
-  /* "what is his instagram" / "show me his linkedin" etc */
+  /* "what is his instagram" / "show me his linkedin" etc -- returns the
+     {label,handle,url} object so the caller can render a clickable button,
+     not just text. */
   function checkSocialQuestion(text) {
     const lower = text.toLowerCase();
     for (const platform of Object.keys(FACTS.social)) {
       const pat = platform === 'x' ? /\b(?:x|twitter)\b/i : wb(platform);
-      if (pat.test(lower) && /\b(what|show|his|link|handle|profile|account|give)\b/i.test(lower)) {
-        return `${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${FACTS.social[platform]}`;
+      if (pat.test(lower) && /\b(what|show|his|link|handle|profile|account|give|open)\b/i.test(lower)) {
+        return FACTS.social[platform];
       }
     }
     return null;
   }
 
+  /* "show me his links" / "social links" / "all his profiles" -- wants the
+     FULL set of link-buttons, not page navigation. */
+  function wantsAllSocialLinks(text) {
+    const lower = text.toLowerCase();
+    return /\b(?:links?|profiles?|socials?)\b/i.test(lower)
+        && /\b(?:show|what|his|give|all|find|see|list)\b/i.test(lower);
+  }
+
   /* ═══════════════ NAV / THEME / MUSIC (word-boundary) ═══════════════ */
   function detectNav(text) {
-    const C = window.RORO_CONFIG || {};
-    const pages = C.pages || {};
+    const pages = getSitePages();
+    const ids = Object.keys(pages);
+    if (!ids.length) return null;
     const lower = text.toLowerCase();
     const verb = /\b(?:show|open|go\s+to|take\s+me\s+to|navigate\s+to|visit|view|switch\s+to)\b/i.test(lower);
 
-    for (const id of Object.keys(pages)) {
-      const pat = idPattern(id);
-      const label = (pages[id].label || id).toLowerCase();
-      const labelHit = label.length > 2 && wb(label).test(lower);
-      if (verb && (pat.test(lower) || labelHit)) return id;
+    /* Resolve a synonym word (cv/blog/gallery/links/...) to a real page id,
+       only if that target id actually exists on this page. */
+    function aliasTarget(lowerText) {
+      for (const [alias, target] of Object.entries(PAGE_ALIASES)) {
+        if (ids.includes(target) && wb(alias).test(lowerText)) return target;
+      }
+      return null;
     }
 
-    /* bare 1-2 word message that IS just a page name -- "social?", "games", "profile" */
+    if (verb) {
+      for (const id of ids) {
+        const label = (pages[id].label || id).toLowerCase();
+        const labelHit = label.length > 2 && wb(label).test(lower);
+        if (idPattern(id).test(lower) || labelHit) return id;
+      }
+      const alias = aliasTarget(lower);
+      if (alias) return alias;
+    }
+
+    /* bare 1-2 word message that IS just a page name -- "social?", "games", "profile", "cv" */
     const bare = lower.replace(/[^a-z\s]/g, '').trim();
     if (bare && bare.split(/\s+/).length <= 2) {
-      for (const id of Object.keys(pages)) {
+      for (const id of ids) {
         if (idPattern(id).test(bare) && bare.replace(idPattern(id), '').trim() === '') return id;
       }
+      const alias = aliasTarget(bare);
+      if (alias) return alias;
     }
     return null;
   }
@@ -572,6 +630,20 @@
         const btn = document.createElement('button'); btn.className = 'roro-opt'; btn.textContent = t;
         btn.addEventListener('click', () => { wrap.remove(); addUserMsg(t); route(t); });
         wrap.appendChild(btn);
+      });
+      chatEl.appendChild(wrap); scrollBottom();
+    }
+    /* Renders clickable link-buttons (same .roro-opt styling as the
+       suggestion chips) that open in a new tab -- used for social links. */
+    function renderLinks(items) {
+      const real = (items || []).filter(it => it && it.url);
+      if (!real.length) return;
+      const wrap = document.createElement('div'); wrap.className = 'roro-options';
+      real.forEach(it => {
+        const a = document.createElement('a'); a.className = 'roro-opt';
+        a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.textContent = it.label;
+        wrap.appendChild(a);
       });
       chatEl.appendChild(wrap); scrollBottom();
     }
@@ -652,25 +724,40 @@
         return;
       }
 
-      /* 6 -- NAV */
+      /* 6 -- LOCAL DATA: skill check ("does he know python?") */
+      const skillAns = checkSkillQuestion(text);
+      if (skillAns) { addBotMsg(skillAns, () => renderOptions(smartOptions())); return; }
+
+      /* 7 -- LOCAL DATA: social links ("show me his links" -> buttons;
+         "what is his instagram" -> one button). Checked BEFORE nav so
+         "links"/"social" in this context renders buttons, not a page jump. */
+      if (wantsAllSocialLinks(text)) {
+        addBotMsg("Here are his links:", () => {
+          renderLinks(Object.values(FACTS.social));
+          renderOptions(smartOptions());
+        });
+        return;
+      }
+      const socialAns = checkSocialQuestion(text);
+      if (socialAns) {
+        addBotMsg(`${socialAns.label}: ${socialAns.handle || socialAns.url || socialAns.note}`, () => {
+          renderLinks([socialAns]);
+          renderOptions(smartOptions());
+        });
+        return;
+      }
+
+      /* 8 -- NAV (DOM-scanned page list + synonym aliases) */
       const nav = detectNav(text);
       if (nav) {
-        const C = window.RORO_CONFIG || {};
-        const label = (C.pages && C.pages[nav] && C.pages[nav].label) || nav;
+        const pages = getSitePages();
+        const label = (pages[nav] && pages[nav].label) || nav;
         addBotMsg(`Opening ${label}.`, () => {
           if (typeof window.navigateTo === 'function') window.navigateTo(nav);
           renderOptions(smartOptions());
         });
         return;
       }
-
-      /* 7 -- LOCAL DATA: skill check */
-      const skillAns = checkSkillQuestion(text);
-      if (skillAns) { addBotMsg(skillAns, () => renderOptions(smartOptions())); return; }
-
-      /* 8 -- LOCAL DATA: social link */
-      const socialAns = checkSocialQuestion(text);
-      if (socialAns) { addBotMsg(socialAns, () => renderOptions(smartOptions())); return; }
 
       /* 9 -- "who are you" -- AI-first, tiny fallback pool */
       if (/^(?:who|what)\s+are\s+you\b|\btell\s+me\s+about\s+yourself\b|\bare\s+you\s+(?:an?\s+)?(?:ai|bot|robot)\b|\bwhat\s+can\s+you\s+do\b/i.test(text)) {
