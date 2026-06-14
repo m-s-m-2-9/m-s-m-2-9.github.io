@@ -39,6 +39,41 @@
   'use strict';
   const TAG = '[RoRo v5]';
 
+  /* ════════════════════ SELF-HEALING CONFIG ════════════════════
+     If admin-control config files (config-ai.js) didn't load — or
+     loaded with empty keys — the AI cascade silently SKIPS Gemini/
+     Groq/OpenRouter entirely (their `if (keys.x)` guards are false),
+     and EVERYTHING falls straight to raw web search. That's why
+     general questions were returning unrelated Wikipedia articles
+     with no portfolio redirect. This guarantees keys exist either
+     way, without overwriting anything that DID load correctly. */
+  window.RORO_AI_CONFIG = window.RORO_AI_CONFIG || {};
+  window.RORO_AI_CONFIG.apiKeys = window.RORO_AI_CONFIG.apiKeys || {};
+  var _K = window.RORO_AI_CONFIG.apiKeys;
+  if (!_K.gemini)     _K.gemini     = 'AQ.Ab8RN6I92qhXWnCoY5dAGA1BEnMtwsvYN1viahWWu3zF9_6fMw';
+  if (!_K.groq)       _K.groq       = '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';
+  if (!_K.openrouter) _K.openrouter = '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';
+  if (!window.RORO_AI_CONFIG.personality) {
+    window.RORO_AI_CONFIG.personality = "You are RoRo, the website manager and AI assistant for Manomay Shailendra Misra's personal portfolio. You are minimal, calm, slightly witty, and never over-enthusiastic. For general questions unrelated to the website, give a brief helpful answer (2-3 sentences) then smoothly mention the portfolio. Never hallucinate \u2014 if something isn't in your facts, say so honestly.";
+  }
+
+  /* ════════════════════ MINIMAL SESSION MEMORY SHIM ══════════════════
+     ai-prompts.js calls RoRoIntelligence.SessionMemory.getHistory()
+     for multi-turn context. If that doesn't exist on this deployment,
+     provide a minimal one backed by THIS file's own history — so
+     follow-ups ("when was that?") actually work. */
+  window.RoRoIntelligence = window.RoRoIntelligence || {};
+  var _coreHistory = [];
+  if (!window.RoRoIntelligence.SessionMemory) {
+    window.RoRoIntelligence.SessionMemory = {
+      getHistory: function (n) { return _coreHistory.slice(-(n || 10)); },
+      addMessage: function (role, content) { _coreHistory.push({ role: role, content: content }); if (_coreHistory.length > 20) _coreHistory.shift(); },
+      addTopic: function () {}, trackResponse: function () {}, logInternet: function () {}, logRecruiter: function () {}, isRepetitive: function () { return false; },
+    };
+  } else if (!window.RoRoIntelligence.SessionMemory.getHistory) {
+    window.RoRoIntelligence.SessionMemory.getHistory = function () { return []; };
+  }
+
   /* ════════════════ LOCAL KNOWLEDGE POOLS ════════════════ */
 
   const ACK_REPLIES = [
@@ -74,9 +109,15 @@
 
   const ABOUT_RORO_RE = /^(?:who|what)\s+are\s+you\b|\btell\s+me\s+about\s+yourself\b|\bare\s+you\s+(?:an?\s+)?(?:ai|bot|robot|real|human)\b|\bwhat\s+(?:can\s+you\s+do|is\s+roro)\b|\bhow\s+do\s+you\s+work\b|\bwhat'?s\s+your\s+(?:name|purpose|deal)\b/i;
 
-  const WHO_IS_MANOMAY_RE = /\bwho\s+(?:is|was|s)\s+manomay\b|\bmanomay\s+(?:kaun|shailendra)\b|\b(?:tell\s+me\s+about|describe)\s+manomay\b|\babout\s+manomay\b|\bwho\s+(?:made|built|created|owns?|runs?|designed|coded)\s+(?:this|the)\s+(?:site|website|portfolio)\b|\bwho\s+is\s+(?:he|msm)\b\??$|\btell\s+me\s+about\s+him\b/i;
+  const WHO_IS_MANOMAY_RE = /^manomay\??$|\bwho\s+(?:is|was|s)\s+manomay\b|\bmanomay\s+(?:kaun|shailendra)\b|\b(?:tell\s+me\s+about|describe)\s+manomay\b|\babout\s+manomay\b|\bwho\s+(?:made|built|created|owns?|runs?|designed|coded)\s+(?:this|the)\s+(?:site|website|portfolio)\b|\bwho\s+is\s+(?:he|msm)\b\??$|\btell\s+me\s+about\s+him\b/i;
 
-  const FRUSTRATION_RE = /\b(?:no+|nope|wrong|that'?s\s+not\s+(?:it|right|what\s+i\s+(?:asked|meant))|not\s+what\s+i\s+(?:asked|meant)|stop|ugh+|annoying|useless|don'?t\s+(?:start|do\s+that)\s+again)\b/i;
+  const FRUSTRATION_RE = /\b(?:no+|nah+|nope|wrong|that'?s\s+not\s+(?:it|right|what\s+i\s+(?:asked|meant))|not\s+what\s+i\s+(?:asked|meant)|stop|ugh+|annoying|useless|don'?t\s+(?:start|do\s+that)\s+again)\b/i;
+
+  /* Independent safety net — covers gaps even if the deployed
+     safety-engine.js is an older/buggy copy. Minimal, addresses
+     specific tested gaps only (slurs, bsdk, sexual content re: minors). */
+  var SUPPL_HARD_RE = /\b(?:bsdk|nigg(?:a|er)s?)\b/i;
+  var SUPPL_EXTREME_RE = /\b(?:fuck(?:ed|ing)?|rape[d]?|molest(?:ed)?)\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b/i;
 
   function detectNav(text) {
     const C = window.RORO_CONFIG || {};
@@ -131,9 +172,8 @@
     }
 
     console.log(TAG, 'core router active \u2014 input interception enabled.');
-
-    /* local conversation history (independent of any old SessionMemory) */
-    const history = [];
+    console.log(TAG, 'AI tiers loaded:', { gemini: !!window.RoRoAIGemini, groq: !!window.RoRoAIGroq, openrouter: !!window.RoRoAIOpenRouter, engine: !!window.RoRoAIEngine, web: !!window.RoRoWebEngine });
+    console.log(TAG, 'API keys present:', { gemini: !!_K.gemini, groq: !!_K.groq, openrouter: !!_K.openrouter });
 
     /* ── small UI helpers (same markup as existing CSS) ──────── */
     function esc(s) {
@@ -225,16 +265,35 @@
       const text = (rawText || '').trim();
       if (!text) return;
 
-      /* 1 ── SAFETY (uses v5 safety-engine if present) ───────── */
+      /* 1 ── SAFETY (uses v5 safety-engine if present) ─────────
+         NOTE: a known false-positive in some deployed copies of
+         safety-engine.js flags ANY multi-word, all-letters message
+         (>=10 letters once spaces are stripped) as SPAM — e.g.
+         "tell me about manomay" -> "tellmeaboutmanomay" (18 letters).
+         Real abuse (HARD/EXTREME/LIMIT/LOCKED) is UNAFFECTED and still
+         handled normally below — only the SPAM catch-all is ignored. */
       if (window.RoRoSafety) {
         try {
           const s = window.RoRoSafety.check(text);
-          if (!s.safe) {
+          if (!s.safe && s.type !== 'SPAM') {
             console.log(TAG, 'route: safety ->', s.type);
             if (!s.silent && s.response) addBotMsg(s.response);
             return;
           }
+          if (!s.safe) console.log(TAG, 'safety SPAM result ignored (false-positive guard)');
         } catch (e) { console.warn(TAG, 'safety check error:', e); }
+      }
+
+      /* 1b ── SUPPLEMENTARY ABUSE CHECK (independent of safety-engine) */
+      if (SUPPL_EXTREME_RE.test(text)) {
+        console.log(TAG, 'route: supplemental extreme');
+        addBotMsg("That's not a conversation I'll have. Full stop.");
+        return;
+      }
+      if (SUPPL_HARD_RE.test(text)) {
+        console.log(TAG, 'route: supplemental hard');
+        addBotMsg("Let's keep it clean — I'll help with anything reasonable.");
+        return;
       }
 
       const T = window.RoRoText;
@@ -335,7 +394,7 @@
 
       /* Light frustration cue \u2014 nudge the AI to acknowledge & pivot */
       let effectiveText = text;
-      if (FRUSTRATION_RE.test(text) && history.length > 0) {
+      if (FRUSTRATION_RE.test(text) && _coreHistory.length > 0) {
         effectiveText = text + '\n\n(The visitor seems frustrated with the previous answer \u2014 briefly acknowledge and try a different angle, do not repeat the same response.)';
       }
 
@@ -347,9 +406,8 @@
         const replyText = (result && result.text) ? result.text : OFFLINE_FALLBACK;
         console.log(TAG, 'route: AI cascade -> tier:', result && result.tier);
 
-        history.push({ role: 'user', content: text });
-        history.push({ role: 'assistant', content: replyText });
-        if (history.length > 20) history.splice(0, history.length - 20);
+        window.RoRoIntelligence.SessionMemory.addMessage('user', text);
+        window.RoRoIntelligence.SessionMemory.addMessage('bot', replyText);
 
         addBotMsg(replyText, () => {
           if (result && result.navigate && typeof window.navigateTo === 'function') {
@@ -364,9 +422,6 @@
         addBotMsg(OFFLINE_FALLBACK);
       }
     }
-
-    /* expose RoRoAIPrompts.buildMessages-compatible history if needed */
-    window.RoRoCoreV5History = history;
 
     /* ════════════════ INPUT INTERCEPTION ════════════════ */
 
