@@ -21,8 +21,8 @@ window.RORO_AI_CONFIG = {
      — the cascade will move straight to the next one.
   ──────────────────────────────────────────────────────────── */
   apiKeys: {
-    gemini:     'AQ.Ab8RN6I92qhXWnCoY5dAGA1BEnMtwsvYN1viahWWu3zF9_6fMw',
-    groq:       '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',
+    gemini:     'AQ.Ab8RN6KMSwRjHQYL5VvQMWga5xWs7Fej6o3XS-XoNcSPttem1Q',
+    groq:       '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',
     openrouter: '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',
   },
 
