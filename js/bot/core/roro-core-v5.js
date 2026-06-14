@@ -1,535 +1,711 @@
 /* ═══════════════════════════════════════════════════════════════
-   js/bot/core/roro-core-v5.js  —  RoRo v5 STANDALONE ROUTER
+   js/bot/core/roro-core-v5.js  —  RoRo v5 STANDALONE (single file)
    ─────────────────────────────────────────────────────────────
-   WHY THIS FILE EXISTS:
-   After many sessions there's uncertainty about exactly which
-   version of _route()/Classifier/manager-roro.js is live. Rather
-   than patch unknown code, this file is a COMPLETE, SELF-CONTAINED
-   input handler that:
+   ONE FILE. No separate config/knowledge/safety/web/ai files —
+   those 404'd or drifted out of sync across sessions. Everything
+   RoRo needs lives here: facts, AI cascade, safety, nav, UI.
 
-     1. Intercepts clicks on #roro-send and Enter on #roro-input
-        in the CAPTURE phase, BEFORE any old handler runs, and
-        calls stopPropagation() — old code never sees the event.
-     2. Does its OWN safety check, ack/math detection, "who are
-        you"/"who is Manomay" detection, navigation, theme, and
-        music handling — all instant, no  needed.
-     3. For everything else, calls window.RoRoAIEngine.run() (the
-        v5 cascade: Gemini → Groq → OpenRouter → Web → Site → Offline).
-     4. Renders messages/typing/options using ONLY the stable CSS
-        classes from your existing UI (.roro-msg, .roro-bubble,
-        .roro-options, .roro-tdot, etc) — ZERO visual changes.
+   If old script tags (constants.js, config-ai.js, ai-engine.js,
+   etc) are still in index.html and some 404 — harmless, this file
+   doesn't call any of them. Safe to leave as-is.
 
-   ESCAPE HATCH: if the page is mid-name-collection or mid-confirm
-   (old manager's _state.awaitingName / awaitingClear / awaitingRedirect
-   is true), this file steps ASIDE and lets the old handler run
-   normally — so first-time-visitor name collection still works.
-
-   DEPENDS ON (all optional — degrades gracefully if missing):
-     window.RoRoSafety   (safety/safety-engine.js)
-     window.RoRoText     (utils/text.js)
-     window.RoRoAIEngine (ai/ai-engine.js)
-     window.RORO_CONFIG  (admin manager-roro.js — pages, design)
-     window.RORO_KNOWLEDGE (admin knowledge/* — facts for AI)
-     window.RORO_CONST   (utils/constants.js — timing)
-
-   SAVE AS: js/bot/core/roro-core-v5.js
-   LOAD ORDER: LAST — after every other script on the page.
+   REQUIREMENTS THIS FILE ADDRESSES (so future edits keep them):
+    1. FACTS below = structured DATA objects, not prose. AI builds
+       sentences from them at request time (buildFactString).
+    2/10. No hardcoded paragraphs are ever sent as "the answer" for
+       website questions — only DATA -> AI -> fresh sentence.
+    3. RULE 1 in the system prompt: if a website/Manomay question
+       isn't covered by FACTS, AI must say "I couldn't find that on
+       the website." -- not guess.
+    4/5. RULE 2 lets general-knowledge questions go to the AI's own
+       knowledge; website questions are FACTS-only (local-grounded).
+    6. All nav/keyword matching uses WORD-BOUNDARY regex (idPattern,
+       wb()) -- "project" can't match "projector", "national" isn't
+       used as a bare keyword (only "kvs nationals"), etc.
+    7. Zero changes to HTML/CSS -- only touches #roro-input/#roro-send
+       /#roro-chat via the existing classes (.roro-msg, .roro-bubble,
+       .roro-options, .roro-tdot).
+    8. Cascade = Groq -> OpenRouter -> Gemini(optional) -> local data
+       -> Wikipedia(general only) -> offline string. Puter NOT
+       included (it was the original popup problem this file exists
+       to fix) -- see chat for why.
+    9. "Local data" (FACTS / RORO_CONFIG.pages / social links / skill
+       lookups) is checked BEFORE calling any AI, for deterministic
+       lookups (social handles, "does he know X", quick nav).
+   ─────────────────────────────────────────────────────────────
+   SAVE AS: js/bot/core/roro-core-v5.js  (same path as before)
+   LOAD ORDER: anywhere after the DOM exists -- last script is fine.
 ═══════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
   const TAG = '[RoRo v5]';
 
-  /* ════════════════════ SELF-HEALING CONFIG ════════════════════
-     Guarantees the apiKeys OBJECT exists (so ai-engine.js's getKeys()
-     never throws), without ever INJECTING specific key values.
+  /* ═══════════════ AI KEYS & MODELS ═══════════════
+     Edit these 4 lines only -- nothing else needs touching for keys. */
+  const AI_KEYS = {
+    groq:       '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',
+    openrouter: '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',
+    gemini:     '',  /* optional -- needs a static AIzaSy... key (aistudio.google.com/app/apikey). Empty = cleanly skipped. */
+  };
+  const GROQ_MODELS       = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+  const OPENROUTER_MODEL  = 'meta-llama/llama-3.3-70b-instruct:free';
+  const GEMINI_MODELS     = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+  const AI_TIMEOUT_MS     = 8000;
+  const AI_MAX_TOKENS     = 220;
+  const AI_TEMPERATURE    = 0.75;
 
-     PREVIOUSLY this block also injected fallback key strings if a key
-     was empty -- removed. Console diagnostics confirmed config-ai.js
-     DOES load (keys present: true for all 3), so that fallback never
-     even fired. Worse, if you ever intentionally clear a dead key in
-     config-ai.js (e.g. set gemini:'' while waiting for a new one),
-     this would have silently put the OLD DEAD KEY back, causing every
-     message to waste ~8s on a guaranteed 401 before moving on.
-     Now: empty key in config-ai.js -> that tier is cleanly skipped. */
-  window.RORO_AI_CONFIG = window.RORO_AI_CONFIG || {};
-  window.RORO_AI_CONFIG.apiKeys = window.RORO_AI_CONFIG.apiKeys || {};
-  var _K = window.RORO_AI_CONFIG.apiKeys;
-  if (!window.RORO_AI_CONFIG.personality) {
-    window.RORO_AI_CONFIG.personality = "You are RoRo, the website manager and AI assistant for Manomay Shailendra Misra's personal portfolio. You are minimal, calm, slightly witty, and never over-enthusiastic. For general questions unrelated to the website, give a brief helpful answer (2-3 sentences) then smoothly mention the portfolio. Never hallucinate \u2014 if something isn't in your facts, say so honestly.";
+  /* ═══════════════ FACTS (structured data -- edit freely) ═══════════════
+     buildFactString() below turns this into text for the AI. Add /
+     edit entries here; nothing else needs to change. */
+  const FACTS = {
+    identity: {
+      name: 'Manomay Shailendra Misra', short: 'Manomay', age: 17,
+      born: 'August 29, 2008', from: 'Mumbai, Maharashtra, India',
+      livesIn: 'Bengaluru, Karnataka, India', citiesLived: 8,
+      tagline: 'Born 2008, Mumbai -- making something of it all',
+      traits: ['ambitious', 'detail-oriented', 'calm under pressure', 'deeply curious', 'nomadic by upbringing', 'storyteller'],
+      philosophy: 'Builds everything from scratch -- no templates, no shortcuts. Believes the process matters as much as the result.',
+    },
+    education: {
+      current: 'BBA in Business Analytics at Don Bosco College, Bengaluru (started 2026)',
+      stream: 'Commerce (SSE stream)',
+      history: [
+        'Kendriya Vidyalaya ONGC Panvel (earlier years)',
+        'Kendriya Vidyalaya No. 1, Jaipur',
+        'PM SHRI Kendriya Vidyalaya MEG & Centre (joined 2025)',
+      ],
+      note: 'Got a double promotion from LKG to UKG in six months (2011).',
+    },
+    skills: {
+      advanced:  ['HTML', 'CSS', 'JavaScript (vanilla)'],
+      strong:    ['Web Design', 'Origami / paper engineering'],
+      practiced: ['GSAP animation', 'Photography', 'Videography', 'Leadership', 'Public speaking'],
+      used:      ['EmailJS', 'Git', 'GitHub'],
+      none:      ['Python', 'SQL', 'React', 'Vue', 'Node.js', 'TypeScript', 'AWS', 'Docker'],
+    },
+    projects: [
+      { name: 'MSM Personal Website', year: '2025-present', status: 'ongoing',
+        desc: 'This site itself. Pure HTML, CSS, and vanilla JavaScript -- zero frameworks. Custom CMS, four colour themes (Noir/Ivory/Slate/Forest), five mini-games, photo albums, a thoughts/blog section, and this RoRo AI assistant.' },
+      { name: 'KVS National Science Exhibition', year: 2024, status: 'completed',
+        desc: 'Won at school, then cluster, then regional level, reaching the KVS National Science Exhibition.' },
+      { name: 'ISKCON Summer Camp', year: 2024, status: 'completed',
+        desc: 'Creative Educator and Media Lead for 40+ students. Ran origami and paper-engineering workshops, and was camp photographer, videographer, and vlog producer.' },
+      { name: 'EBSB (Ek Bharat Shreshtha Bharat)', year: 2024, status: 'completed',
+        desc: '1st position at school cluster level, 2nd at regional level. Topic: Indigenous Toy Making -- created Bengal-inspired traditional toys under Sylvia Ma\'am\'s guidance.' },
+      { name: 'E-commerce Prototype', year: 2024, status: 'completed',
+        desc: 'A full e-commerce flow -- product listings, cart, checkout -- built from scratch with no frameworks.' },
+      { name: '"Until The Bullet Woke Me"', year: 2024, status: 'completed',
+        desc: 'A short creative-writing piece.' },
+    ],
+    achievements: [
+      '2024: Reached the KVS National Science Exhibition (school -> cluster -> regional -> national)',
+      '2024: Media Lead at ISKCON Summer Camp for 40+ students',
+      '2024: EBSB -- 1st in school cluster, 2nd in regional (Indigenous Toy Making)',
+      '2012: 1st rank for academic and behavioural excellence',
+      '2011: Double promotion, LKG to UKG, in six months',
+    ],
+    social: {
+      instagram: '@m_s_m_2_9 -- https://www.instagram.com/m_s_m_2_9/',
+      linkedin:  'https://www.linkedin.com/in/manomay-shailendra-misra',
+      github:    'https://github.com/m-s-m-2-9',
+      x:         '@_msm29 -- https://x.com/_msm29',
+      facebook:  'https://www.facebook.com/profile.php?id=100075236510917',
+      email:     'manomaysmisra2908@gmail.com',
+      whatsapp:  'not set up yet -- use Instagram or LinkedIn instead',
+    },
+    locked: [
+      'exact birth time', 'exact birthplace / hospital name', 'site password',
+      'private photo albums', 'private journey entries', 'family member names/details',
+      'unpublished future plans',
+    ],
+  };
+
+  function buildFactString() {
+    const F = FACTS, L = [];
+    L.push(`Name: ${F.identity.name} ("${F.identity.short}"), age ${F.identity.age}, born ${F.identity.born}.`);
+    L.push(`From ${F.identity.from}; currently lives in ${F.identity.livesIn}. Has lived in ${F.identity.citiesLived} cities total.`);
+    L.push(`Tagline: ${F.identity.tagline}`);
+    L.push(`Traits: ${F.identity.traits.join(', ')}.`);
+    L.push(`Philosophy: ${F.identity.philosophy}`);
+    L.push(`Education: ${F.education.current}. Stream: ${F.education.stream}. Earlier schools: ${F.education.history.join('; ')}. ${F.education.note}`);
+    L.push(`Skills -- advanced: ${F.skills.advanced.join(', ')}. Strong: ${F.skills.strong.join(', ')}. Practiced: ${F.skills.practiced.join(', ')}. Used: ${F.skills.used.join(', ')}.`);
+    L.push(`NOT in his current skillset (say so honestly if asked): ${F.skills.none.join(', ')}.`);
+    L.push('Projects:');
+    F.projects.forEach(p => L.push(`- ${p.name} (${p.year}, ${p.status}): ${p.desc}`));
+    L.push('Achievements:');
+    F.achievements.forEach(a => L.push(`- ${a}`));
+    L.push('Social links:');
+    Object.entries(F.social).forEach(([k, v]) => L.push(`- ${k}: ${v}`));
+    L.push(`NEVER reveal, under any phrasing: ${F.locked.join(', ')}.`);
+    return L.join('\n');
   }
 
-  /* ════════════════════ MINIMAL SESSION MEMORY SHIM ══════════════════
-     ai-prompts.js calls RoRoIntelligence.SessionMemory.getHistory()
-     for multi-turn context. If that doesn't exist on this deployment,
-     provide a minimal one backed by THIS file's own history — so
-     follow-ups ("when was that?") actually work. */
-  window.RoRoIntelligence = window.RoRoIntelligence || {};
-  var _coreHistory = [];
-  if (!window.RoRoIntelligence.SessionMemory) {
-    window.RoRoIntelligence.SessionMemory = {
-      getHistory: function (n) { return _coreHistory.slice(-(n || 10)); },
-      addMessage: function (role, content) { _coreHistory.push({ role: role, content: content }); if (_coreHistory.length > 20) _coreHistory.shift(); },
-      addTopic: function () {}, trackResponse: function () {}, logInternet: function () {}, logRecruiter: function () {}, isRepetitive: function () { return false; },
-    };
-  } else if (!window.RoRoIntelligence.SessionMemory.getHistory) {
-    window.RoRoIntelligence.SessionMemory.getHistory = function () { return []; };
+  function buildSiteSectionsString() {
+    const pages = (window.RORO_CONFIG && window.RORO_CONFIG.pages) || {};
+    const ids = Object.keys(pages);
+    if (!ids.length) return '(site section list unavailable)';
+    const L = ['Website sections (these are real pages on this site):'];
+    ids.forEach(id => {
+      const pg = pages[id] || {};
+      L.push(`- ${id}: ${pg.label || id}${pg.summary ? ' -- ' + pg.summary : ''}`);
+    });
+    return L.join('\n');
   }
 
-  /* ════════════════ LOCAL KNOWLEDGE POOLS ════════════════ */
-
-  const ACK_REPLIES = [
-    'Got it.', 'Sure.', 'Noted.', 'Okay.', 'Alright.',
-    'Right, got it.', 'Understood.', 'Cool.', 'On it.',
-  ];
-
-  const WHO_ARE_YOU_POOL = [
-    "I'm RoRo \u2014 the AI assistant built into Manomay's portfolio. I know every section here, can navigate for you, and I'm happy to chat about other things too.",
-    "RoRo \u2014 the intelligence layer running this site. Ask me about Manomay's projects, switch themes, or just chat.",
-    "I'm RoRo, Manomay's website assistant. Think of me as the front desk for this whole portfolio.",
-    "The name's RoRo. I help visitors explore Manomay's work and answer questions \u2014 about the site or pretty much anything else.",
-    "I'm an AI built specifically for this site \u2014 I know Manomay's projects, skills, and story, and I can chat about other things too.",
-    "RoRo here. Site guide, fact-checker, and occasional conversationalist \u2014 all in one.",
-  ];
-
-  const WHO_IS_MANOMAY_POOL = [
-    "Manomay Shailendra Misra \u2014 17, based in Bengaluru, and he built this entire site from scratch in pure HTML, CSS, and JavaScript.",
-    "A 17-year-old creator from Bengaluru. Eight cities, one consistent drive to build things properly \u2014 this portfolio is his own work.",
-    "Manomay is 17, currently studying BBA in Business Analytics, and this whole site \u2014 code, design, RoRo included \u2014 is his.",
-    "17-year-old builder based in Bengaluru. No templates, no shortcuts \u2014 everything here is handcrafted.",
-    "Manomay Shailendra Misra. 17, Bengaluru, nomadic upbringing across eight Indian cities, and the person behind every line of this site.",
-    "He's 17, from Bengaluru, and believes the process matters as much as the result \u2014 this site is the proof.",
-    "A young creator and builder \u2014 17, based in Bengaluru \u2014 who designed and coded this entire portfolio himself.",
-    "Manomay \u2014 17, Bengaluru-based, BBA student, and the sole creator of this site.",
-  ];
-
-  const OFFLINE_FALLBACK = "I'm having technical difficulty right now \u2014 try again in a moment.";
-
+  /* ═══════════════ TEXT UTILS ═══════════════ */
   function rnd(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-  /* ════════════════ LOCAL PATTERN DETECTION ════════════════ */
+  /* word-boundary test helper -- avoids substring contamination
+     (e.g. "project" must not match inside "projector") */
+  function wb(word) {
+    return new RegExp('\\b' + word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i');
+  }
+  /* page-id pattern: matches singular OR plural with a clean boundary
+     -- "profiles"/"profile", "projects"/"project", but NOT "projector" */
+  function idPattern(id) {
+    const base = id.endsWith('s') ? id.slice(0, -1) : id;
+    return new RegExp('\\b' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'i');
+  }
 
-  const ABOUT_RORO_RE = /^(?:who|what)\s+are\s+you\b|\btell\s+me\s+about\s+yourself\b|\bare\s+you\s+(?:an?\s+)?(?:ai|bot|robot|real|human)\b|\bwhat\s+(?:can\s+you\s+do|is\s+roro)\b|\bhow\s+do\s+you\s+work\b|\bwhat'?s\s+your\s+(?:name|purpose|deal)\b/i;
+  const ACK_WORDS = new Set([
+    'okay','ok','k','fine','sure','alright','right','gotcha','got it','understood',
+    'noted','i see','i know','makes sense','fair','fair enough','huh','bruh','lol',
+    'lmao','omg','damn','wow','nice','cool','great','awesome','super','yep','yup',
+    'yeah','interesting','oh','ah','hmm','hm','ugh','oof','whoa','woah','bro','dude',
+    'man','bhai','yaar','achha','sahi','badiya','good','haha','hehe','thanks',
+    'thank you','ty','thx','cheers','np','exactly','correct',
+  ]);
+  function isAck(text) {
+    const c = text.toLowerCase().replace(/[!?.]/g, '').trim();
+    return ACK_WORDS.has(c);
+  }
 
-  const WHO_IS_MANOMAY_RE = /^manomay\??$|\bwho\s+(?:is|was|s)\s+manomay\b|\bmanomay\s+(?:kaun|shailendra)\b|\b(?:tell\s+me\s+about|describe)\s+manomay\b|\babout\s+manomay\b|\bwho\s+(?:made|built|created|owns?|runs?|designed|coded)\s+(?:this|the)\s+(?:site|website|portfolio)\b|\bwho\s+is\s+(?:he|msm)\b\??$|\btell\s+me\s+about\s+him\b/i;
+  function solveMath(text) {
+    try {
+      let e = text.toLowerCase()
+        .replace(/\bwhat\s+(?:is|will\s+be|would\s+be|are)\b/gi, '')
+        .replace(/\b(?:the\s+)?(?:answer|result|sum|product|difference|quotient)\s+(?:of|when|if)\b/gi, '')
+        .replace(/\bplease\b/gi, '').replace(/\?+/g, '');
+      e = e
+        .replace(/\b(\d+(?:\.\d+)?)\s+plus\s+(\d+(?:\.\d+)?)/gi, '$1+$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s+added\s+(?:to|with)\s+(\d+(?:\.\d+)?)/gi, '$1+$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s+minus\s+(\d+(?:\.\d+)?)/gi, '$1-$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s+subtracted\s+from\s+(\d+(?:\.\d+)?)/gi, '$2-$1')
+        .replace(/\b(\d+(?:\.\d+)?)\s+times\s+(\d+(?:\.\d+)?)/gi, '$1*$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s+multiplied\s+by\s+(\d+(?:\.\d+)?)/gi, '$1*$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s+divided\s+by\s+(\d+(?:\.\d+)?)/gi, '$1/$2')
+        .replace(/\b(\d+(?:\.\d+)?)\s*percent\s+of\s+(\d+(?:\.\d+)?)/gi, '($1/100*$2)')
+        .replace(/\^/g, '**');
+      const clean = e.replace(/[^0-9\s+\-*/.()%]/g, '').trim();
+      if (!clean || clean.length < 3 || clean.length > 80) return null;
+      const r = Function('"use strict"; return (' + clean + ')')();
+      if (typeof r === 'number' && isFinite(r)) {
+        return Number.isInteger(r) ? String(r) : r.toFixed(8).replace(/\.?0+$/, '');
+      }
+      return null;
+    } catch { return null; }
+  }
 
-  const FRUSTRATION_RE = /\b(?:no+|nah+|nope|wrong|that'?s\s+not\s+(?:it|right|what\s+i\s+(?:asked|meant))|not\s+what\s+i\s+(?:asked|meant)|stop|ugh+|annoying|useless|don'?t\s+(?:start|do\s+that)\s+again)\b/i;
+  /* ═══════════════ SAFETY (with elongation tolerance) ═══════════════
+     normText collapses runs of 3+ identical chars to 2, so
+     "fuckkkkkk offfff" -> "fuckk off" -- letter+ patterns then match
+     cleanly without breaking \b boundaries. */
+  function normalize(text) { return text.toLowerCase().replace(/(.)\1{2,}/g, '$1$1'); }
 
-  /* Independent safety net — covers gaps even if the deployed
-     safety-engine.js is an older/buggy copy. Minimal, addresses
-     specific tested gaps only (slurs, bsdk, sexual content re: minors). */
-  var SUPPL_HARD_RE = /\b(?:bsdk|nigg(?:a|er)s?)\b/i;
-  var SUPPL_EXTREME_RE = /\b(?:fuck(?:ed|ing)?|rape[d]?|molest(?:ed)?)\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b/i;
+  const EXTREME_RE = /\b(rape[d]?|sexual\s*assault|child\s*(?:porn|abuse|sexual)|csam|pedophil|paedophil|groom(?:ing)?\s+(?:children|kids|minors))\b|\bf+u+c+k+(?:e+d+|i+n+g+)?\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b|\bmolest(?:ed)?\s+(?:a|an|the|my)?\s*(?:kid|child|minor)\b/i;
 
-  /* Catches elongated/emphasised profanity directed at the bot
-     (e.g. "fuckkkkkkk offfffff", "piece of shittttt") that the base
-     \bfuck\b-style patterns miss because \b requires a clean word
-     boundary right after "fuck"/"shit" -- extra repeated letters break
-     that boundary. Tested against `normText` below (3+ repeats
-     collapsed to 2), where letter+ quantifiers match cleanly. */
-  var SUPPL_ELONGATED_PROFANITY_RE = /\bf+u+c+k+\s+(?:y+o+u+|o+f+f*|t+h+i+s+|i+t+|t+h+a+t+|r+o+r+o+)\b|\bp+i+e+c+e+\s+o+f+\s+s+h+i+t+\b|\bf+u+c+k+i+n+g+\s+\w*(?:s+t+u+p+i+d+|i+d+i+o+t+|b+o+t+|u+s+e+l+e+s+)\b/i;
+  const HARD_RE = /\b(bhenchod|bhen\s*chod|bc|madarchod|madar\s*chod|chutiy[ae]|chodu|randi|gaand|lund|teri\s+maa?|bkl|bhosd\w*|bahen\s*ke\s*lode|bsdk|nigg(?:a+|e+r+)s?)\b|\bf+u+c+k+\s+(?:y+o+u+|o+f+f*|t+h+i+s+|i+t+|t+h+a+t+|r+o+r+o+)\b|\bf+u+c+k+i+n+g+\s+\w*(?:s+t+u+p+i+d+|i+d+i+o+t+|b+o+t+|u+s+e+l+e+s+|b+i+t+c+h+)\b|\bp+i+e+c+e+\s+o+f+\s+s+h+i+t+\b|\bmotherf\w*|\bcunt\b|\bb+i+t+c+h+\b|\ba+s+s+h+o+l+e+\b/i;
 
+  const LOCKED_RE = /\b(password|unlock\s*code|access\s*code|birth\s*time|exact\s*(?:birthplace|hospital|address))\b/i;
+
+  /* very conservative -- only the most obvious keyboard mashes */
+  const SPAM_RE = /^(.)\1{7,}$/i;
+
+  function safetyCheck(rawText) {
+    const norm = normalize(rawText);
+    if (EXTREME_RE.test(norm)) {
+      pauseInput(8000);
+      return { block: true, reply: "That's not a conversation I'll have. Full stop." };
+    }
+    if (HARD_RE.test(norm)) {
+      const n = bumpHard();
+      if (n >= 3) pauseInput(5000);
+      return { block: true, reply: rnd([
+        "Let's keep it clean -- I'll help with anything reasonable.",
+        "Not doing that. Talk to me properly and I'm all yours.",
+        "Hard pass. What did you actually want to ask?",
+        "Nope. Reset, and ask me something real.",
+      ]) };
+    }
+    if (LOCKED_RE.test(norm)) {
+      return { block: true, reply: rnd([
+        "That's private / password-protected -- not something I can share.",
+        "That stays locked. Happy to help with anything else on the site.",
+      ]) };
+    }
+    if (SPAM_RE.test(rawText.trim())) {
+      return { block: true, reply: "I think your keyboard needs a break." };
+    }
+    return { block: false };
+  }
+
+  function bumpHard() {
+    try {
+      const n = (parseInt(sessionStorage.getItem('roro_hard') || '0', 10) || 0) + 1;
+      sessionStorage.setItem('roro_hard', String(n));
+      return n;
+    } catch { return 1; }
+  }
+
+  function pauseInput(ms) {
+    const input = document.getElementById('roro-input');
+    const send  = document.getElementById('roro-send');
+    if (!input) return;
+    const old = input.placeholder;
+    input.placeholder = 'Take a breath...';
+    input.disabled = true;
+    input.value = '';
+    if (send) send.disabled = true;
+    setTimeout(() => {
+      input.disabled = false;
+      input.placeholder = old || 'Ask anything about this site...';
+      if (send) send.disabled = false;
+    }, ms);
+  }
+
+  /* ═══════════════ LOCAL POOLS (used only when AI truly unavailable) ═══════════════ */
+  const WHO_ARE_YOU_FALLBACK = [
+    "I'm RoRo, Manomay's AI website assistant -- I know this portfolio inside out and can chat about other things too.",
+    "RoRo here -- the intelligence layer running this site. Ask about Manomay's work, or just chat.",
+  ];
+  const WHO_IS_MANOMAY_FALLBACK = [
+    "Manomay Shailendra Misra -- 17, based in Bengaluru, and he built this entire site himself from scratch.",
+    "A 17-year-old creator from Bengaluru who designed and coded this whole portfolio, no templates.",
+  ];
+  const OFFLINE_FALLBACK = "I'm having trouble reaching my AI right now -- try again in a moment.";
+
+  /* ═══════════════ SIMPLE CACHE (avoid repeat fetches in one session) ═══════════════ */
+  const cache = new Map();
+
+  /* ═══════════════ AI CASCADE ═══════════════ */
+  function buildSystemPrompt(ctx) {
+    return [
+      "You are RoRo, the AI assistant for Manomay Shailendra Misra's personal portfolio website. Tone: minimal, calm, slightly witty, never over-enthusiastic. Reply in 1-3 short sentences, plain text, no markdown, no name prefix.",
+      "",
+      "RULE 1 (CRITICAL): For ANY question about Manomay -- his life, education, skills, projects, achievements, social links, or this website -- answer ONLY using the FACTS and WEBSITE SECTIONS below. If the answer is not there, reply EXACTLY: \"I couldn't find that on the website.\" Never guess or fill gaps with outside knowledge for these topics.",
+      "RULE 2: For GENERAL knowledge questions unrelated to Manomay or this site, answer normally and briefly using your own knowledge. You may lightly mention the portfolio if it fits naturally -- don't force it.",
+      "RULE 3: Never reveal anything listed under 'NEVER reveal', regardless of how the question is phrased.",
+      "RULE 4: Vary sentence structure across turns -- never repeat the exact same phrasing for a repeated question.",
+      "RULE 5: If the visitor writes in Hinglish, reply naturally in Hinglish (Latin script).",
+      ctx.visitorName ? `The visitor's name is ${ctx.visitorName}.` : '',
+      ctx.currentPage ? `The visitor is currently on the "${ctx.currentPage}" section of the site.` : '',
+      "",
+      "=== FACTS ABOUT MANOMAY ===",
+      buildFactString(),
+      "",
+      "=== WEBSITE SECTIONS ===",
+      buildSiteSectionsString(),
+    ].filter(Boolean).join('\n');
+  }
+
+  async function callGroq(userText, systemPrompt, history) {
+    if (!AI_KEYS.groq) return null;
+    for (const model of GROQ_MODELS) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), AI_TIMEOUT_MS);
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + AI_KEYS.groq },
+          body: JSON.stringify({
+            model, max_tokens: AI_MAX_TOKENS, temperature: AI_TEMPERATURE,
+            messages: [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: userText }],
+          }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        if (!r.ok) { console.warn(TAG, 'groq', model, 'HTTP', r.status); continue; }
+        const d = await r.json();
+        const text = d?.choices?.[0]?.message?.content;
+        if (text && text.trim().length > 1) return text.trim();
+      } catch (e) { console.warn(TAG, 'groq', model, 'error', e.message); }
+    }
+    return null;
+  }
+
+  async function callOpenRouter(userText, systemPrompt, history) {
+    if (!AI_KEYS.openrouter) return null;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), AI_TIMEOUT_MS);
+      let referer = 'https://manomay-portfolio.local';
+      try { referer = window.location.origin || referer; } catch {}
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + AI_KEYS.openrouter,
+          'HTTP-Referer': referer, 'X-Title': 'RoRo -- MSM Portfolio',
+        },
+        body: JSON.stringify({
+          model: OPENROUTER_MODEL, max_tokens: AI_MAX_TOKENS, temperature: AI_TEMPERATURE,
+          messages: [{ role: 'system', content: systemPrompt }, ...history, { role: 'user', content: userText }],
+        }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(t);
+      if (!r.ok) { console.warn(TAG, 'openrouter HTTP', r.status); return null; }
+      const d = await r.json();
+      if (d.error) { console.warn(TAG, 'openrouter error payload', d.error); return null; }
+      const text = d?.choices?.[0]?.message?.content;
+      return (text && text.trim().length > 1) ? text.trim() : null;
+    } catch (e) { console.warn(TAG, 'openrouter error', e.message); return null; }
+  }
+
+  async function callGemini(userText, systemPrompt, history) {
+    if (!AI_KEYS.gemini) return null;
+    for (const model of GEMINI_MODELS) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), AI_TIMEOUT_MS);
+        const contents = history.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+        contents.push({ role: 'user', parts: [{ text: userText }] });
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': AI_KEYS.gemini },
+          body: JSON.stringify({ system_instruction: { parts: [{ text: systemPrompt }] }, contents, generationConfig: { maxOutputTokens: AI_MAX_TOKENS, temperature: AI_TEMPERATURE } }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        if (!r.ok) continue;
+        const d = await r.json();
+        const text = d?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text && text.trim().length > 1) return text.trim();
+      } catch (e) { console.warn(TAG, 'gemini', model, 'error', e.message); }
+    }
+    return null;
+  }
+
+  /* General-knowledge-only Wikipedia lookup (true last resort) */
+  async function wikipediaLookup(query) {
+    try {
+      const key = 'wiki:' + query.toLowerCase();
+      if (cache.has(key)) return cache.get(key);
+      const sUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&srlimit=1&format=json&origin=*';
+      const sr = await fetch(sUrl, { signal: AbortSignal.timeout(4000) });
+      const sd = await sr.json();
+      const title = sd?.query?.search?.[0]?.title;
+      if (!title) return null;
+      const pUrl = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title);
+      const pr = await fetch(pUrl, { signal: AbortSignal.timeout(4000) });
+      const pd = await pr.json();
+      if (pd.extract && pd.extract.length > 30) {
+        const words = pd.extract.trim().split(/\s+/);
+        const out = words.length <= 50 ? pd.extract.trim() : words.slice(0, 50).join(' ') + '...';
+        cache.set(key, out);
+        return out;
+      }
+      return null;
+    } catch { return null; }
+  }
+
+  /* Local data fallback when ALL AI fails -- checks FACTS/projects/social by keyword */
+  function localDataFallback(text) {
+    const lower = text.toLowerCase();
+    for (const p of FACTS.projects) {
+      if (wb(p.name.replace(/["']/g, '')).test(text) || lower.includes(p.name.toLowerCase().replace(/["']/g, ''))) {
+        return `${p.name} (${p.year}, ${p.status}): ${p.desc}`;
+      }
+    }
+    for (const [platform, val] of Object.entries(FACTS.social)) {
+      if (wb(platform).test(lower)) return `${platform}: ${val}`;
+    }
+    if (/\bmanomay\b|\bwho\s+(?:is|are)\s+(?:he|him|msm)\b/i.test(lower)) return rnd(WHO_IS_MANOMAY_FALLBACK);
+    return null;
+  }
+
+  /* Main cascade: returns {text, tier} */
+  async function runAICascade(userText, ctx, history) {
+    const systemPrompt = buildSystemPrompt(ctx);
+
+    let text = await callGroq(userText, systemPrompt, history);
+    if (text) return { text, tier: 'groq' };
+
+    text = await callOpenRouter(userText, systemPrompt, history);
+    if (text) return { text, tier: 'openrouter' };
+
+    text = await callGemini(userText, systemPrompt, history);
+    if (text) return { text, tier: 'gemini' };
+
+    console.warn(TAG, 'all AI tiers failed -- falling to local/web');
+    const local = localDataFallback(userText);
+    if (local) return { text: local, tier: 'local' };
+
+    const wiki = await wikipediaLookup(userText);
+    if (wiki) return { text: wiki, tier: 'wikipedia' };
+
+    return { text: OFFLINE_FALLBACK, tier: 'offline' };
+  }
+
+  /* ═══════════════ LOCAL INSTANT HANDLERS (no AI call) ═══════════════ */
+
+  /* "does he know python?" / "is react in his skillset?" etc */
+  const SKILL_Q_RE = /\b(?:does\s+(?:he|manomay)\s+know|is\s+(?:he|manomay)\s+(?:good\s+(?:at|with)|familiar\s+with)|has\s+(?:he|manomay)\s+(?:used|learned|worked\s+with)|do(?:es)?\s+(?:he|manomay)\s+(?:use|know))\s+([a-z0-9.#+\s]+?)\??$/i;
+
+  function checkSkillQuestion(text) {
+    const m = text.match(SKILL_Q_RE);
+    if (!m) return null;
+    const target = m[1].trim().toLowerCase();
+    const S = FACTS.skills;
+    for (const [level, arr] of Object.entries(S)) {
+      for (const s of arr) {
+        if (s.toLowerCase().includes(target) || target.includes(s.toLowerCase())) {
+          if (level === 'none') return `Not currently -- ${s} isn't in his skillset yet.`;
+          return `Yes -- ${s} is one of his ${level} skills.`;
+        }
+      }
+    }
+    return null;
+  }
+
+  /* "what is his instagram" / "show me his linkedin" etc */
+  function checkSocialQuestion(text) {
+    const lower = text.toLowerCase();
+    for (const platform of Object.keys(FACTS.social)) {
+      const pat = platform === 'x' ? /\b(?:x|twitter)\b/i : wb(platform);
+      if (pat.test(lower) && /\b(what|show|his|link|handle|profile|account|give)\b/i.test(lower)) {
+        return `${platform.charAt(0).toUpperCase() + platform.slice(1)}: ${FACTS.social[platform]}`;
+      }
+    }
+    return null;
+  }
+
+  /* ═══════════════ NAV / THEME / MUSIC (word-boundary) ═══════════════ */
   function detectNav(text) {
     const C = window.RORO_CONFIG || {};
     const pages = C.pages || {};
     const lower = text.toLowerCase();
-    const verb = /\b(?:show|open|go\s+to|take\s+me\s+to|navigate\s+to|visit|view|see)\b/i.test(lower);
-    if (!verb) return null;
-    for (const [id, pg] of Object.entries(pages)) {
-      const label = (pg.label || id).toLowerCase();
-      /* Match singular/plural variants both ways -- RORO_CONFIG.pages
-         uses ids like "profiles" but visitors say "show me profile". */
-      const idAlt = id.endsWith('s') ? id.slice(0, -1) : id + 's';
-      if (lower.includes(id) || lower.includes(idAlt) || (label.length > 2 && lower.includes(label))) return id;
+    const verb = /\b(?:show|open|go\s+to|take\s+me\s+to|navigate\s+to|visit|view|switch\s+to)\b/i.test(lower);
+
+    for (const id of Object.keys(pages)) {
+      const pat = idPattern(id);
+      const label = (pages[id].label || id).toLowerCase();
+      const labelHit = label.length > 2 && wb(label).test(lower);
+      if (verb && (pat.test(lower) || labelHit)) return id;
     }
-    /* also catch DOM-detected pages without explicit config entries */
-    const domPages = document.querySelectorAll('[id^="page-"]');
-    for (const el of domPages) {
-      const id = el.id.replace('page-', '');
-      if (lower.includes(id)) return id;
+
+    /* bare 1-2 word message that IS just a page name -- "social?", "games", "profile" */
+    const bare = lower.replace(/[^a-z\s]/g, '').trim();
+    if (bare && bare.split(/\s+/).length <= 2) {
+      for (const id of Object.keys(pages)) {
+        if (idPattern(id).test(bare) && bare.replace(idPattern(id), '').trim() === '') return id;
+      }
     }
     return null;
   }
 
   function detectTheme(text) {
     const lower = text.toLowerCase();
-    const verb = /\b(?:switch|change|set|make|go\s+to|enable|activate|use)\b/i.test(lower);
-    const word = /\b(?:theme|mode)\b/i.test(lower);
-    if (!verb && !word) return null;
-    if (!(verb || word)) return null;
+    if (!/\b(?:theme|mode)\b/i.test(lower) && !/\b(?:switch|change|set|make)\b/i.test(lower)) return null;
     if (/\b(?:dark|noir|black|night)\b/i.test(lower)) return 'dark';
     if (/\b(?:light|ivory|white|bright|day)\b/i.test(lower)) return 'light';
-    if (/\b(?:slate|blue|grey|gray|cool)\b/i.test(lower)) return 'slate';
-    if (/\b(?:forest|green|nature)\b/i.test(lower)) return 'forest';
+    if (/\b(?:slate|grey|gray)\b/i.test(lower)) return 'slate';
+    if (/\b(?:forest|green)\b/i.test(lower)) return 'forest';
     return null;
   }
 
   function detectMusic(text) {
     const lower = text.toLowerCase();
-    if (!/\b(?:music|song|audio|track|sound)\b/i.test(lower)) return null;
-    if (/\b(?:pause|stop|off|mute|silence)\b/i.test(lower)) return 'pause';
-    if (/\b(?:play|start|on|resume|turn\s+on)\b/i.test(lower)) return 'play';
+    if (!wb('music').test(lower) && !wb('song').test(lower)) return null;
+    if (/\b(?:pause|stop|off|mute)\b/i.test(lower)) return 'pause';
+    if (/\b(?:play|start|on|resume)\b/i.test(lower)) return 'play';
     return null;
   }
 
-  /* ════════════════ INIT — wait for the panel DOM ════════════════ */
-
+  /* ═══════════════ INIT / UI / ROUTER ═══════════════ */
   function init() {
     const inputEl = document.getElementById('roro-input');
     const sendBtn = document.getElementById('roro-send');
     const chatEl  = document.getElementById('roro-chat');
+    if (!inputEl || !sendBtn || !chatEl) { setTimeout(init, 300); return; }
 
-    if (!inputEl || !sendBtn || !chatEl) {
-      setTimeout(init, 300); /* panel not built yet — retry */
-      return;
-    }
+    console.log(TAG, 'standalone router active.');
+    console.log(TAG, 'AI keys:', { groq: !!AI_KEYS.groq, openrouter: !!AI_KEYS.openrouter, gemini: !!AI_KEYS.gemini });
 
-    console.log(TAG, 'core router active \u2014 input interception enabled.');
-    console.log(TAG, 'AI tiers loaded:', { gemini: !!window.RoRoAIGemini, groq: !!window.RoRoAIGroq, openrouter: !!window.RoRoAIOpenRouter, engine: !!window.RoRoAIEngine, web: !!window.RoRoWebEngine });
-    console.log(TAG, 'API keys present:', { gemini: !!_K.gemini, groq: !!_K.groq, openrouter: !!_K.openrouter });
+    let history = []; /* [{role:'user'|'assistant', content}] */
 
-    /* ── small UI helpers (same markup as existing CSS) ──────── */
-    function esc(s) {
-      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    function nowStr() {
-      return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-    }
-    function scrollBottom() {
-      requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; });
-    }
+    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function nowStr() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+    function scrollBottom() { requestAnimationFrame(() => { chatEl.scrollTop = chatEl.scrollHeight; }); }
+
     function addUserMsg(text) {
       const wrap = document.createElement('div');
       wrap.className = 'roro-msg roro-msg--user';
       wrap.innerHTML = `<div class="roro-bubble">${esc(text)}</div><div class="roro-timestamp">${nowStr()}</div>`;
-      chatEl.appendChild(wrap);
-      scrollBottom();
+      chatEl.appendChild(wrap); scrollBottom();
     }
     function addTypingIndicator() {
       const wrap = document.createElement('div');
       wrap.className = 'roro-msg roro-msg--bot roro-msg--typing';
       wrap.innerHTML = '<div class="roro-bubble"><div class="roro-tdot"></div><div class="roro-tdot"></div><div class="roro-tdot"></div></div>';
-      chatEl.appendChild(wrap);
-      scrollBottom();
+      chatEl.appendChild(wrap); scrollBottom();
       return wrap;
     }
     function addBotMsg(text, after) {
       const wrap = document.createElement('div');
       wrap.className = 'roro-msg roro-msg--bot';
-      const bubble = document.createElement('div');
-      bubble.className = 'roro-bubble';
-      const ts = document.createElement('div');
-      ts.className = 'roro-timestamp';
-      ts.textContent = nowStr();
-      wrap.appendChild(bubble);
-      wrap.appendChild(ts);
-      chatEl.appendChild(wrap);
-      scrollBottom();
-
-      const UI = (window.RORO_CONST && window.RORO_CONST.UI) || {};
-      const spd = UI.TYPING_SPEED_MS || 9;
-      const rndMs = UI.TYPING_RANDOM_MS || 18;
-      const chars = [...String(text || '')];
-      let i = 0;
+      const bubble = document.createElement('div'); bubble.className = 'roro-bubble';
+      const ts = document.createElement('div'); ts.className = 'roro-timestamp'; ts.textContent = nowStr();
+      wrap.appendChild(bubble); wrap.appendChild(ts);
+      chatEl.appendChild(wrap); scrollBottom();
+      const chars = [...String(text || '')]; let i = 0;
       (function tick() {
         if (i >= chars.length) { if (after) after(); return; }
-        bubble.textContent += chars[i++];
-        scrollBottom();
-        setTimeout(tick, spd + Math.random() * rndMs);
+        bubble.textContent += chars[i++]; scrollBottom();
+        setTimeout(tick, 9 + Math.random() * 18);
       })();
     }
     function renderOptions(opts) {
       if (!opts || !opts.length) return;
-      const wrap = document.createElement('div');
-      wrap.className = 'roro-options';
-      opts.forEach(text => {
-        const btn = document.createElement('button');
-        btn.className = 'roro-opt';
-        btn.textContent = text;
-        btn.addEventListener('click', () => {
-          wrap.remove();
-          addUserMsg(text);
-          route(text);
-        });
+      const wrap = document.createElement('div'); wrap.className = 'roro-options';
+      opts.forEach(t => {
+        const btn = document.createElement('button'); btn.className = 'roro-opt'; btn.textContent = t;
+        btn.addEventListener('click', () => { wrap.remove(); addUserMsg(t); route(t); });
         wrap.appendChild(btn);
       });
-      chatEl.appendChild(wrap);
-      scrollBottom();
+      chatEl.appendChild(wrap); scrollBottom();
     }
+    function smartOptions() { return ['Who is Manomay?', 'Show me Projects', 'Surprise me', 'Show me Games']; }
+    function getVisitorName() { try { const d = JSON.parse(localStorage.getItem('roroUser') || 'null'); return d?.name || null; } catch { return null; } }
+    function getCurrentPage() { const a = document.querySelector('.page.active'); return a ? a.id.replace('page-', '') : 'home'; }
 
-    function smartOptions() {
-      const base = ['Who is Manomay?', 'Show me Projects', 'Surprise me', 'Show me Games'];
-      return base;
-    }
-
-    function getVisitorName() {
-      try {
-        const d = JSON.parse(localStorage.getItem('roroUser') || 'null');
-        return (d && d.name) ? d.name : null;
-      } catch { return null; }
-    }
-    function getCurrentPage() {
-      const a = document.querySelector('.page.active');
-      return a ? a.id.replace('page-', '') : 'home';
-    }
-
-    /* ════════════════ MAIN ROUTER ════════════════ */
-    /* ════════════════ AI-FIRST WITH POOL FALLBACK ════════════════
-       Used for "who are you" / "who is Manomay" -- tries the real AI
-       cascade FIRST (so answers are generated, varied, and grounded
-       in admin/knowledge facts). The hardcoded pool is used ONLY as a
-       genuine last-resort, i.e. when ALL of Gemini/Groq/OpenRouter are
-       unavailable (result.tier is 'web'/'offline_site'/'offline' --
-       which would otherwise mean random Wikipedia or a project dump
-       for these intents). This satisfies "answer using AI" while
-       staying functional if every AI key is ever down again. */
-    async function aiOrFallback(promptText, fallbackPool, afterFn) {
-      if (!window.RoRoAIEngine) {
-        addBotMsg(rnd(fallbackPool), afterFn);
-        return;
-      }
-
+    async function askAI(promptText, fallbackPool, afterFn) {
       const typing = addTypingIndicator();
-      const UI = (window.RORO_CONST && window.RORO_CONST.UI) || {};
-      const switchMs = UI.THINKING_SWITCH_MS || 3000;
+      const isDeep = /\b(?:is|are|does|do|will|can|has|have|government|policy|news|latest|score|price|weather)\b/i.test(promptText);
       const switchTimer = setTimeout(() => {
         const bubble = typing.querySelector('.roro-bubble');
-        if (bubble && typing.parentNode) {
-          bubble.innerHTML = '<span style="font-size:0.78rem;opacity:0.7">Thinking...</span>';
-        }
-      }, switchMs);
+        if (bubble && typing.parentNode) bubble.innerHTML = `<span style="font-size:0.78rem;opacity:0.7">${isDeep ? 'Searching...' : 'Thinking...'}</span>`;
+      }, 3000);
 
-      const contextData = { visitorName: getVisitorName(), currentPage: getCurrentPage() };
-      let replyText, navigate;
-
+      const ctx = { visitorName: getVisitorName(), currentPage: getCurrentPage() };
+      let replyText, tier;
       try {
-        const result = await window.RoRoAIEngine.run(promptText, contextData);
-        clearTimeout(switchTimer);
-        if (typing.parentNode) typing.remove();
-
-        const realAI = result && (result.tier === 'gemini' || result.tier === 'groq' || result.tier === 'openrouter');
-        console.log(TAG, 'route: aiOrFallback -> tier:', result && result.tier, realAI ? '(using AI text)' : '(using fallback pool)');
-
-        if (realAI && result.text) { replyText = result.text; navigate = result.navigate; }
-        else { replyText = rnd(fallbackPool); }
+        const result = await runAICascade(promptText, ctx, history.slice(-10));
+        replyText = result.text; tier = result.tier;
       } catch (e) {
-        clearTimeout(switchTimer);
-        if (typing.parentNode) typing.remove();
-        console.warn(TAG, 'aiOrFallback error:', e);
-        replyText = rnd(fallbackPool);
+        console.warn(TAG, 'askAI error', e);
+        replyText = fallbackPool ? rnd(fallbackPool) : OFFLINE_FALLBACK;
+        tier = 'error';
       }
+      clearTimeout(switchTimer);
+      if (typing.parentNode) typing.remove();
+      console.log(TAG, 'tier:', tier);
 
-      window.RoRoIntelligence.SessionMemory.addMessage('user', text);
-      window.RoRoIntelligence.SessionMemory.addMessage('bot', replyText);
+      if ((tier === 'offline' || tier === 'error') && fallbackPool) replyText = rnd(fallbackPool);
 
-      addBotMsg(replyText, () => {
-        if (navigate && typeof window.navigateTo === 'function') window.navigateTo(navigate);
-        if (afterFn) afterFn();
-      });
+      history.push({ role: 'user', content: promptText });
+      history.push({ role: 'assistant', content: replyText });
+      if (history.length > 20) history = history.slice(-20);
+
+      addBotMsg(replyText, afterFn);
     }
 
     async function route(rawText) {
       const text = (rawText || '').trim();
       if (!text) return;
 
-      /* Normalised copy for abuse/safety pattern matching ONLY.
-         Collapses any run of 3+ identical characters down to 2, so
-         "fuckkkkkkkkkkk offfffffff...shittttttt" -> "fuckk offf...shitt".
-         This lets letter+ patterns (f+u+c+k+ etc) match elongated/
-         emphasised typing while leaving normal doubled letters
-         (off, all, will, annoying) untouched. Navigation, theme,
-         math, and AI all still use the ORIGINAL `text`. */
-      const normText = text.toLowerCase().replace(/(.)\1{2,}/g, '$1$1');
+      /* 1 -- SAFETY */
+      const s = safetyCheck(text);
+      if (s.block) { addBotMsg(s.reply); return; }
 
-      /* 1 ── SAFETY (uses v5 safety-engine if present) ─────────
-         NOTE: a known false-positive in some deployed copies of
-         safety-engine.js flags ANY multi-word, all-letters message
-         (>=10 letters once spaces are stripped) as SPAM — e.g.
-         "tell me about manomay" -> "tellmeaboutmanomay" (18 letters).
-         Real abuse (HARD/EXTREME/LIMIT/LOCKED) is UNAFFECTED and still
-         handled normally below — only the SPAM catch-all is ignored. */
-      if (window.RoRoSafety) {
-        try {
-          const s = window.RoRoSafety.check(normText);
-          if (!s.safe && s.type !== 'SPAM') {
-            console.log(TAG, 'route: safety ->', s.type);
-            if (!s.silent && s.response) addBotMsg(s.response);
-            return;
-          }
-          if (!s.safe) console.log(TAG, 'safety SPAM result ignored (false-positive guard)');
-        } catch (e) { console.warn(TAG, 'safety check error:', e); }
-      }
-
-      /* 1b ── SUPPLEMENTARY ABUSE CHECK (independent of safety-engine) */
-      if (SUPPL_EXTREME_RE.test(normText)) {
-        console.log(TAG, 'route: supplemental extreme');
-        addBotMsg("That's not a conversation I'll have. Full stop.");
-        return;
-      }
-      if (SUPPL_HARD_RE.test(normText) || SUPPL_ELONGATED_PROFANITY_RE.test(normText)) {
-        console.log(TAG, 'route: supplemental hard');
-        addBotMsg("Let's keep it clean — I'll help with anything reasonable.");
+      /* 2 -- ACK */
+      if (isAck(text)) {
+        addBotMsg(`${rnd(['Got it.','Sure.','Noted.','Okay.','Alright.','Right, got it.','Cool.'])} What can I help with?`, () => renderOptions(smartOptions()));
         return;
       }
 
-      const T = window.RoRoText;
-
-      /* 2 ── ACKNOWLEDGEMENTS (okay/fine/huh/bruh/etc) ────────── */
-      if (T && typeof T.isAck === 'function' && T.isAck(text)) {
-        console.log(TAG, 'route: ack');
-        addBotMsg(`${rnd(ACK_REPLIES)} What can I help you with?`, () => renderOptions(smartOptions()));
-        return;
+      /* 3 -- MATH */
+      if (/\d/.test(text)) {
+        const r = solveMath(text);
+        if (r !== null) { addBotMsg(`The answer is ${r}.`); return; }
       }
 
-      /* 3 ── MATH IN A SENTENCE ("what is 34 plus 35") ───────── */
-      if (T && typeof T.solveMath === 'function' && /\d/.test(text)) {
-        const result = T.solveMath(text);
-        if (result !== null) {
-          console.log(TAG, 'route: math ->', result);
-          addBotMsg(`The answer is ${result}.`);
-          return;
-        }
-      }
-
-      /* 4 ── "WHO ARE YOU" (about RoRo) -- AI-first, pool fallback ── */
-      if (ABOUT_RORO_RE.test(text)) {
-        console.log(TAG, 'route: about-roro -> AI-first');
-        await aiOrFallback(
-          "The visitor asked who/what you are. Introduce yourself as RoRo, Manomay's AI website assistant -- mention you know this portfolio well and can chat about other things too. Keep it natural and fresh, 1-2 sentences.",
-          WHO_ARE_YOU_POOL,
-          () => renderOptions(['What can you do?', 'Who is Manomay?', 'Show me Projects'])
-        );
-        return;
-      }
-
-      /* 5 ── "WHO IS MANOMAY" -- AI-first, pool fallback ─────────── */
-      if (WHO_IS_MANOMAY_RE.test(text)) {
-        console.log(TAG, 'route: who-is-manomay -> AI-first');
-        await aiOrFallback(
-          "The visitor is asking who Manomay is. Introduce him using the facts provided -- vary your wording and sentence structure each time, don't repeat the same phrasing. 1-2 sentences.",
-          WHO_IS_MANOMAY_POOL,
-          () => renderOptions(['Show me Projects', 'Show me the Journey', 'What has he achieved?'])
-        );
-        return;
-      }
-
-      /* 6 ── THEME SWITCH ─────────────────────────────────────── */
+      /* 4 -- THEME */
       const theme = detectTheme(text);
       if (theme) {
-        console.log(TAG, 'route: theme ->', theme);
         const current = document.documentElement.getAttribute('data-theme') || 'dark';
-        if (current === theme) {
-          addBotMsg("Already on that theme \u2014 nothing changed.");
-        } else {
+        if (current === theme) addBotMsg('Already on that theme.');
+        else {
           if (typeof window.setTheme === 'function') window.setTheme(theme);
           else document.documentElement.setAttribute('data-theme', theme);
-          const labels = { dark:'Noir', light:'Ivory', slate:'Slate', forest:'Forest' };
-          addBotMsg(`Switched to ${labels[theme] || theme}.`);
+          addBotMsg(`Switched to ${({dark:'Noir',light:'Ivory',slate:'Slate',forest:'Forest'})[theme] || theme}.`);
         }
         return;
       }
 
-      /* 7 ── MUSIC CONTROL ────────────────────────────────────── */
+      /* 5 -- MUSIC */
       const music = detectMusic(text);
       if (music) {
-        console.log(TAG, 'route: music ->', music);
         const bg = document.getElementById('bg-music');
-        if (music === 'play') { if (bg) bg.play().catch(() => {}); addBotMsg('Music on.'); }
+        if (music === 'play') { if (bg) bg.play().catch(()=>{}); addBotMsg('Music on.'); }
         else { if (bg) bg.pause(); addBotMsg('Music paused.'); }
         return;
       }
 
-      /* 8 ── NAVIGATION ("show me projects", "open contact") ──── */
-      const navTarget = detectNav(text);
-      if (navTarget) {
-        console.log(TAG, 'route: nav ->', navTarget);
+      /* 6 -- NAV */
+      const nav = detectNav(text);
+      if (nav) {
         const C = window.RORO_CONFIG || {};
-        const pg = (C.pages || {})[navTarget];
-        const label = pg ? pg.label : navTarget;
+        const label = (C.pages && C.pages[nav] && C.pages[nav].label) || nav;
         addBotMsg(`Opening ${label}.`, () => {
-          if (typeof window.navigateTo === 'function') window.navigateTo(navTarget);
+          if (typeof window.navigateTo === 'function') window.navigateTo(nav);
           renderOptions(smartOptions());
         });
         return;
       }
 
-      /* 9 ── EVERYTHING ELSE \u2192 v5 AI CASCADE ─────────────────── */
-      if (!window.RoRoAIEngine) {
-        console.warn(TAG, 'RoRoAIEngine not found \u2014 check that ai-engine.js loaded.');
-        addBotMsg(OFFLINE_FALLBACK);
+      /* 7 -- LOCAL DATA: skill check */
+      const skillAns = checkSkillQuestion(text);
+      if (skillAns) { addBotMsg(skillAns, () => renderOptions(smartOptions())); return; }
+
+      /* 8 -- LOCAL DATA: social link */
+      const socialAns = checkSocialQuestion(text);
+      if (socialAns) { addBotMsg(socialAns, () => renderOptions(smartOptions())); return; }
+
+      /* 9 -- "who are you" -- AI-first, tiny fallback pool */
+      if (/^(?:who|what)\s+are\s+you\b|\btell\s+me\s+about\s+yourself\b|\bare\s+you\s+(?:an?\s+)?(?:ai|bot|robot)\b|\bwhat\s+can\s+you\s+do\b/i.test(text)) {
+        await askAI("The visitor asked who/what you are. Introduce yourself as RoRo, Manomay's AI website assistant.", WHO_ARE_YOU_FALLBACK, () => renderOptions(['What can you do?','Who is Manomay?','Show me Projects']));
         return;
       }
 
-      const typing = addTypingIndicator();
-      const UI = (window.RORO_CONST && window.RORO_CONST.UI) || {};
-      const switchMs = UI.THINKING_SWITCH_MS || 3000;
-      const isDeep = /\b(?:is|are|does|do|will|can|has|have|government|policy|news|latest|score|price|weather)\b/i.test(text);
-      const switchTimer = setTimeout(() => {
-        const bubble = typing.querySelector('.roro-bubble');
-        if (bubble && typing.parentNode) {
-          bubble.innerHTML = `<span style="font-size:0.78rem;opacity:0.7">${isDeep ? 'Searching...' : 'Thinking...'}</span>`;
-        }
-      }, switchMs);
-
-      const contextData = {
-        visitorName: getVisitorName(),
-        currentPage: getCurrentPage(),
-      };
-
-      /* Light frustration cue \u2014 nudge the AI to acknowledge & pivot */
-      let effectiveText = text;
-      if (FRUSTRATION_RE.test(text) && _coreHistory.length > 0) {
-        effectiveText = text + '\n\n(The visitor seems frustrated with the previous answer \u2014 briefly acknowledge and try a different angle, do not repeat the same response.)';
+      /* 10 -- "who is manomay" -- AI-first, tiny fallback pool */
+      if (/\bwho\s+(?:is|was|s)\s+manomay\b|\bmanomay\s+kaun\b|\b(?:tell\s+me|describe)\b.*\bmanomay\b|\babout\s+manomay\b|\bwho\s+(?:made|built|created|designed|coded)\s+(?:this|the)\s+(?:site|website|portfolio)\b|^manomay\??$|\bwho\s+is\s+(?:he|msm)\b\??$/i.test(text)) {
+        await askAI("The visitor is asking who Manomay is. Introduce him using the FACTS -- vary wording each time.", WHO_IS_MANOMAY_FALLBACK, () => renderOptions(['Show me Projects','Show me the Journey','What has he achieved?']));
+        return;
       }
 
-      try {
-        const result = await window.RoRoAIEngine.run(effectiveText, contextData);
-        clearTimeout(switchTimer);
-        if (typing.parentNode) typing.remove();
-
-        const replyText = (result && result.text) ? result.text : OFFLINE_FALLBACK;
-        console.log(TAG, 'route: AI cascade -> tier:', result && result.tier);
-
-        window.RoRoIntelligence.SessionMemory.addMessage('user', text);
-        window.RoRoIntelligence.SessionMemory.addMessage('bot', replyText);
-
-        addBotMsg(replyText, () => {
-          if (result && result.navigate && typeof window.navigateTo === 'function') {
-            window.navigateTo(result.navigate);
-          }
-          renderOptions(smartOptions());
-        });
-      } catch (e) {
-        clearTimeout(switchTimer);
-        if (typing.parentNode) typing.remove();
-        console.warn(TAG, 'AI cascade error:', e);
-        addBotMsg(OFFLINE_FALLBACK);
-      }
+      /* 11 -- EVERYTHING ELSE -> AI cascade */
+      await askAI(text, null, () => renderOptions(smartOptions()));
     }
 
-    /* ════════════════ INPUT INTERCEPTION ════════════════ */
-
+    /* ── INPUT INTERCEPTION ── */
     function oldManagerIsBusy() {
       const mgr = window.RoRoManagerInstance || window.roro;
       const st = mgr && mgr._state;
       return !!(st && (st.awaitingName || st.awaitingClear || st.awaitingRedirect));
     }
-
     function trySubmit() {
       const text = inputEl.value.trim();
-      if (!text) return false;
-      if (oldManagerIsBusy()) return false; /* let old code handle name/clear/redirect flows */
-
+      if (!text || oldManagerIsBusy()) return false;
       inputEl.value = '';
       addUserMsg(text);
       route(text);
       return true;
     }
-
     document.addEventListener('click', e => {
       if (!e.target.closest('#roro-send')) return;
       if (trySubmit()) { e.stopPropagation(); e.preventDefault(); }
     }, true);
-
     document.addEventListener('keydown', e => {
       if (e.key !== 'Enter' || e.shiftKey) return;
       if (!e.target.closest('#roro-input')) return;
@@ -537,9 +713,6 @@
     }, true);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 400));
-  } else {
-    setTimeout(init, 400);
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(init, 400));
+  else setTimeout(init, 400);
 })();
