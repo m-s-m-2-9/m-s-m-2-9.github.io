@@ -104,13 +104,27 @@
       '2012: 1st rank for academic and behavioural excellence',
       '2011: Double promotion, LKG to UKG, in six months',
     ],
+    /* From client testimonials on the Social page */
+    clientWork: [
+      { client: 'Golden Star PG', work: "Designed their logo from scratch -- understood their brand and target audience and delivered a creative, memorable result." },
+      { client: 'Mayura Woods', work: "Integrated an AI chatbot (similar to RoRo) into their website for human-like 24/7 customer support, reducing support workload and improving lead qualification." },
+    ],
+    /* Condensed from Manomay's own 2024 Journey-page entry */
+    journey2024: [
+      "2024 was a high-pressure board-exam year; he stayed fairly consistent with studies and became noticeably calmer and more balanced.",
+      "His closest friend through this period was Himanish.",
+      "His tablet was taken away to cut distractions, which helped him focus on studies -- and his writing/poetry actually grew stronger during this time.",
+      "Over summer holidays he taught crafts and paper-based activities to children at an ISKCON center, and also shot and edited video during a temple trip -- an early experience in creative management and visual storytelling.",
+      "In EBSB (Ek Bharat Shreshtha Bharat), his topic was Indigenous Toy Making (Bengal-inspired toys, guided by Sylvia Ma'am): 1st at school cluster level, 2nd at regional level. Only 1st place advances to nationals, so this particular event did not reach nationals.",
+      "After Class 10 he chose Commerce (SSE stream) and continued for classes 11-12 at another Kendriya Vidyalaya (his school didn't offer those grades), rather than switching to a different board.",
+    ],
     social: {
       instagram: { label: 'Instagram', handle: '@m_s_m_2_9', url: 'https://www.instagram.com/m_s_m_2_9/' },
       linkedin:  { label: 'LinkedIn',  handle: '',           url: 'https://www.linkedin.com/in/manomay-shailendra-misra' },
       github:    { label: 'GitHub',    handle: '@m-s-m-2-9', url: 'https://github.com/m-s-m-2-9' },
       x:         { label: 'X',         handle: '@_msm29',    url: 'https://x.com/_msm29' },
       facebook:  { label: 'Facebook',  handle: '',           url: 'https://www.facebook.com/profile.php?id=100075236510917' },
-      email:     { label: 'Email',     handle: 'manomaysmisra2908@gmail.com', url: 'mailto:manomaysmisra2908@gmail.com' },
+      email:     { label: 'Email',     handle: 'manomaysmisra2908@gmail.com', url: 'mailto:manomaysmisra2908@gmail.com', copyValue: 'manomaysmisra2908@gmail.com' },
       whatsapp:  { label: 'WhatsApp',  handle: '', url: '', note: 'not set up yet -- use Instagram or LinkedIn instead' },
     },
     locked: [
@@ -134,6 +148,10 @@
     F.projects.forEach(p => L.push(`- ${p.name} (${p.year}, ${p.status}): ${p.desc}`));
     L.push('Achievements:');
     F.achievements.forEach(a => L.push(`- ${a}`));
+    L.push('Client / freelance work (from testimonials on the Social page):');
+    F.clientWork.forEach(c => L.push(`- ${c.client}: ${c.work}`));
+    L.push('2024 journey notes:');
+    F.journey2024.forEach(j => L.push(`- ${j}`));
     L.push('Social links:');
     Object.entries(F.social).forEach(([k, v]) => L.push(`- ${v.label}: ${v.url ? (v.handle ? v.handle + ' -- ' : '') + v.url : (v.note || 'not available')}`));
     L.push(`NEVER reveal, under any phrasing: ${F.locked.join(', ')}.`);
@@ -171,6 +189,7 @@
     socials: 'social', link: 'social', links: 'social',
     bday: 'birthday',
     skills: 'traits', personality: 'traits', portfolio: 'projects',
+    identity: 'about', bio: 'about',
   };
 
   function buildSiteSectionsString() {
@@ -330,6 +349,7 @@
       "RULE 3: Never reveal anything listed under 'NEVER reveal', regardless of how the question is phrased. If asked specifically about Manomay's mother, father, parents, family, or siblings, say family details aren't shared on the website -- do not give a general bio instead.",
       "RULE 4: Vary sentence structure across turns -- never repeat the exact same phrasing for a repeated question.",
       "RULE 5: If the visitor writes in Hinglish, reply naturally in Hinglish (Latin script).",
+      "RULE 6: If it's natural to point the visitor at a page, end your reply with ONE tag on its own at the very end, using a real page id from WEBSITE SECTIONS below: [SUGGEST:pageid] if you're ASKING whether they want to go there (e.g. 'Want me to take you to the projects page?'), or [NAVIGATE:pageid] if their request makes it OBVIOUS they want that page right now (briefly confirm, e.g. 'Sure, opening Projects.'). Omit this tag entirely most of the time -- only use it when genuinely relevant, and only with an id actually listed in WEBSITE SECTIONS.",
       ctx.visitorName ? `The visitor's name is ${ctx.visitorName}.` : '',
       ctx.currentPage ? `The visitor is currently on the "${ctx.currentPage}" section of the site.` : '',
       "",
@@ -591,6 +611,7 @@
     console.log(TAG, 'AI keys:', { groq: !!AI_KEYS.groq, openrouter: !!AI_KEYS.openrouter, gemini: !!AI_KEYS.gemini });
 
     let history = []; /* [{role:'user'|'assistant', content}] */
+    let pendingSuggestion = null; /* page id the AI last offered via [SUGGEST:id], consumed by a "yes" */
 
     function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
     function nowStr() { return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
@@ -633,21 +654,61 @@
       });
       chatEl.appendChild(wrap); scrollBottom();
     }
-    /* Renders clickable link-buttons (same .roro-opt styling as the
-       suggestion chips) that open in a new tab -- used for social links. */
+    /* Renders link-buttons at the EXACT same size/theme as the suggestion
+       chips (.roro-opt class, untouched) -- just overriding underline and
+       corner radius inline so they read as rectangles, not pills. Items
+       with `copyValue` (email) become a copy-to-clipboard button that
+       briefly shows "Copied!" instead of opening anything. */
     function renderLinks(items) {
-      const real = (items || []).filter(it => it && it.url);
+      const real = (items || []).filter(it => it && (it.url || it.copyValue));
       if (!real.length) return;
       const wrap = document.createElement('div'); wrap.className = 'roro-options';
       real.forEach(it => {
-        const a = document.createElement('a'); a.className = 'roro-opt';
-        a.href = it.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-        a.textContent = it.label;
-        wrap.appendChild(a);
+        let el;
+        if (it.copyValue) {
+          el = document.createElement('button');
+          el.type = 'button';
+          el.className = 'roro-opt';
+          el.textContent = it.label;
+          el.addEventListener('click', () => {
+            const original = it.label;
+            const restore = () => { el.textContent = original; };
+            const ok = () => { el.textContent = 'Copied!'; setTimeout(restore, 1200); };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(it.copyValue).then(ok).catch(ok);
+            } else ok();
+          });
+        } else {
+          el = document.createElement('a');
+          el.className = 'roro-opt';
+          el.href = it.url; el.target = '_blank'; el.rel = 'noopener noreferrer';
+          el.textContent = it.label;
+        }
+        el.style.textDecoration = 'none';
+        el.style.borderRadius = '4px';
+        wrap.appendChild(el);
       });
       chatEl.appendChild(wrap); scrollBottom();
     }
-    function smartOptions() { return ['Who is Manomay?', 'Show me Projects', 'Surprise me', 'Show me Games']; }
+    /* Context-aware suggestion chips -- topic-relevant set based on the
+       user's message + the bot's reply, instead of always the same 4. */
+    const TOPIC_OPTIONS = {
+      projects: ['Tell me more about that', 'What else has he built?', 'Why should I hire him?', 'Show me the Journey'],
+      skills:   ['Show me Projects', 'Why should I hire him?', 'Who is Manomay?', 'Show me the Journey'],
+      journey:  ['Tell me more', 'What has he achieved?', 'Show me Projects', 'Who is Manomay?'],
+      games:    ['Show me Games', 'Show me Projects', 'Who is Manomay?', 'Surprise me'],
+      manomay:  ['Show me Projects', 'What has he achieved?', 'Show me the Journey', 'Why should I hire him?'],
+      default:  ['Who is Manomay?', 'Show me Projects', 'Surprise me', 'Show me Games'],
+    };
+    function smartOptions(userText, replyText) {
+      const combined = `${userText || ''} ${replyText || ''}`.toLowerCase();
+      if (/\b(project|website|ecommerce|e-commerce|iskcon|mayura|golden star|bullet)\b/.test(combined)) return TOPIC_OPTIONS.projects;
+      if (/\b(skill|python|javascript|html|css|gsap|origami|hire)\b/.test(combined)) return TOPIC_OPTIONS.skills;
+      if (/\b(journey|achievement|nationals|ebsb|himanish|2024|2025|2017)\b/.test(combined)) return TOPIC_OPTIONS.journey;
+      if (/\b(game|games|2048|snake|memory|scramble)\b/.test(combined)) return TOPIC_OPTIONS.games;
+      if (/\bmanomay\b/.test(combined)) return TOPIC_OPTIONS.manomay;
+      return TOPIC_OPTIONS.default;
+    }
     function getVisitorName() { try { const d = JSON.parse(localStorage.getItem('roroUser') || 'null'); return d?.name || null; } catch { return null; } }
     function getCurrentPage() { const a = document.querySelector('.page.active'); return a ? a.id.replace('page-', '') : 'home'; }
 
@@ -675,11 +736,28 @@
 
       if ((tier === 'offline' || tier === 'error') && fallbackPool) replyText = rnd(fallbackPool);
 
+      /* Parse + strip a trailing [SUGGEST:id] / [NAVIGATE:id] tag (RULE 6).
+         Invalid/unknown ids are stripped too but produce no action. */
+      let navTag = null;
+      const tagMatch = replyText.match(/\s*\[(SUGGEST|NAVIGATE):([a-zA-Z0-9_-]+)\]\s*$/i);
+      if (tagMatch) {
+        const kind = tagMatch[1].toUpperCase();
+        const id = tagMatch[2].toLowerCase();
+        if (getSitePages()[id]) navTag = { kind, id };
+        replyText = replyText.slice(0, tagMatch.index).trim();
+      }
+      pendingSuggestion = (navTag && navTag.kind === 'SUGGEST') ? navTag.id : null;
+
       history.push({ role: 'user', content: promptText });
       history.push({ role: 'assistant', content: replyText });
       if (history.length > 20) history = history.slice(-20);
 
-      addBotMsg(replyText, afterFn);
+      addBotMsg(replyText, () => {
+        if (navTag && navTag.kind === 'NAVIGATE' && typeof window.navigateTo === 'function') {
+          window.navigateTo(navTag.id);
+        }
+        if (afterFn) afterFn(replyText);
+      });
     }
 
     async function route(rawText) {
@@ -690,9 +768,42 @@
       const s = safetyCheck(text);
       if (s.block) { addBotMsg(s.reply); return; }
 
-      /* 2 -- ACK */
+      /* 1b -- NAME CHANGE / CLEAR DATA. Persists to localStorage.roroUser.name,
+         the same key js/roro-intro.js reads for "Welcome back, {n}" on the
+         splash screen -- so a name set here also applies on next visit. */
+      const CALL_ME_STOPWORDS = new Set(['when','later','maybe','back','now','tonight','tomorrow','again','please','sometime','anytime','today','if','once','soon','here','there']);
+      const nameMatch = text.match(/\bcall\s+me\s+([a-zA-Z][a-zA-Z'-]{1,24})\b/i) || text.match(/\bmy\s+name\s+is\s+([a-zA-Z][a-zA-Z'-]{1,24})\b/i);
+      if (nameMatch && !CALL_ME_STOPWORDS.has(nameMatch[1].toLowerCase())) {
+        const formatted = nameMatch[1][0].toUpperCase() + nameMatch[1].slice(1).toLowerCase();
+        try {
+          const existing = JSON.parse(localStorage.getItem('roroUser') || '{}') || {};
+          existing.name = formatted;
+          localStorage.setItem('roroUser', JSON.stringify(existing));
+        } catch {}
+        addBotMsg(`Got it -- I'll call you ${formatted} from now on.`, () => renderOptions(smartOptions(text)));
+        return;
+      }
+      if (/\b(?:clear (?:my )?data|reset (?:everything|my data|me)|forget me|start (?:fresh|over)|delete my (?:data|info|name))\b/i.test(text)) {
+        try { localStorage.removeItem('roroUser'); } catch {}
+        history = [];
+        addBotMsg("Done -- your saved name and data are cleared. Refresh the page and it'll feel like your first visit.", () => renderOptions(smartOptions(text)));
+        return;
+      }
+
+      /* 2 -- ACK (or confirming a page the previous reply offered via [SUGGEST:id]) */
+      if (!isAck(text)) pendingSuggestion = null; /* stale offers don't fire on a later unrelated "yes" */
       if (isAck(text)) {
-        addBotMsg(`${rnd(['Got it.','Sure.','Noted.','Okay.','Alright.','Right, got it.','Cool.'])} What can I help with?`, () => renderOptions(smartOptions()));
+        if (pendingSuggestion) {
+          const target = pendingSuggestion; pendingSuggestion = null;
+          const pages = getSitePages();
+          const label = (pages[target] && pages[target].label) || target;
+          addBotMsg(`Opening ${label}.`, () => {
+            if (typeof window.navigateTo === 'function') window.navigateTo(target);
+            renderOptions(smartOptions(text));
+          });
+          return;
+        }
+        addBotMsg(`${rnd(['Got it.','Sure.','Noted.','Okay.','Alright.','Right, got it.','Cool.'])} What can I help with?`, () => renderOptions(smartOptions(text)));
         return;
       }
 
@@ -732,18 +843,12 @@
          "what is his instagram" -> one button). Checked BEFORE nav so
          "links"/"social" in this context renders buttons, not a page jump. */
       if (wantsAllSocialLinks(text)) {
-        addBotMsg("Here are his links:", () => {
-          renderLinks(Object.values(FACTS.social));
-          renderOptions(smartOptions());
-        });
+        addBotMsg("Here are his links:", () => renderLinks(Object.values(FACTS.social)));
         return;
       }
       const socialAns = checkSocialQuestion(text);
       if (socialAns) {
-        addBotMsg(`${socialAns.label}: ${socialAns.handle || socialAns.url || socialAns.note}`, () => {
-          renderLinks([socialAns]);
-          renderOptions(smartOptions());
-        });
+        addBotMsg(`${socialAns.label}: ${socialAns.handle || socialAns.url || socialAns.note}`, () => renderLinks([socialAns]));
         return;
       }
 
@@ -772,7 +877,7 @@
       }
 
       /* 11 -- EVERYTHING ELSE -> AI cascade */
-      await askAI(text, null, () => renderOptions(smartOptions()));
+      await askAI(text, null, (reply) => renderOptions(smartOptions(text, reply)));
     }
 
     /* ── INPUT INTERCEPTION ── */
