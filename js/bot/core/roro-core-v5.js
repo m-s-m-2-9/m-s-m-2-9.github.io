@@ -60,11 +60,10 @@
   const FACTS = {
     identity: {
       name: 'Manomay Shailendra Misra', short: 'Manomay', age: 17,
-      born: 'August 29, 2008', from: 'Mumbai, Maharashtra, India',
-      livesIn: 'Bengaluru, Karnataka, India', citiesLived: 8,
-      tagline: 'Born 2008, Mumbai -- making something of it all',
+      born: 'August 29, 2008', from: 'Banglore, Karnataka, India',citiesLived: 8,
+      tagline: 'Connecting the dots · Making something of it all',
       traits: ['ambitious', 'detail-oriented', 'calm under pressure', 'deeply curious', 'nomadic by upbringing', 'storyteller'],
-      philosophy: 'Builds everything from scratch -- no templates, no shortcuts. Believes the process matters as much as the result.',
+      philosophy: 'Builds everything from scratch with help of AI -- no templates, no shortcuts. Believes the process matters as much as the result.',
     },
     education: {
       current: 'BBA in Business Analytics at Don Bosco College, Bengaluru (started 2026)',
@@ -77,15 +76,15 @@
       note: 'Got a double promotion from LKG to UKG in six months (2011).',
     },
     skills: {
-      advanced:  ['HTML', 'CSS', 'JavaScript (vanilla)'],
-      strong:    ['Web Design', 'Origami / paper engineering'],
+      advanced:  ['HTML', 'CSS', 'JavaScript (vanilla)', 'Python', 'SQL' '(all with AI )'],
+      strong:    ['Web Design', 'Data Analysis', 'Communication', ],
       practiced: ['GSAP animation', 'Photography', 'Videography', 'Leadership', 'Public speaking'],
       used:      ['EmailJS', 'Git', 'GitHub'],
-      none:      ['Python', 'SQL', 'React', 'Vue', 'Node.js', 'TypeScript', 'AWS', 'Docker'],
+      none:      ['React', 'Vue', 'Node.js', 'TypeScript', 'AWS', 'Docker'],
     },
     projects: [
       { name: 'MSM Personal Website', year: '2025-present', status: 'ongoing',
-        desc: 'This site itself. Pure HTML, CSS, and vanilla JavaScript -- zero frameworks. Custom CMS, four colour themes (Noir/Ivory/Slate/Forest), five mini-games, photo albums, a thoughts/blog section, and this RoRo AI assistant.' },
+        desc: 'This site itself. Pure HTML, CSS, and vanilla JavaScript -- zero frameworks. Custom CMS, four colour themes (Noir/Ivory/Slate/Forest), five mini-games, photo albums, a thoughts/blog section, all made with little helps from AI and this RoRo AI assistant.' },
       { name: 'KVS National Science Exhibition', year: 2024, status: 'completed',
         desc: 'Won at school, then cluster, then regional level, reaching the KVS National Science Exhibition.' },
       { name: 'ISKCON Summer Camp', year: 2024, status: 'completed',
@@ -98,7 +97,7 @@
         desc: 'A short creative-writing piece.' },
     ],
     achievements: [
-      '2024: Reached the KVS National Science Exhibition (school -> cluster -> regional -> national)',
+      '2024: Reached the KVS National Science Exhibition (1st in school -> 1st in cluster -> 1st in regional -> national)',
       '2024: Media Lead at ISKCON Summer Camp for 40+ students',
       '2024: EBSB -- 1st in school cluster, 2nd in regional (Indigenous Toy Making)',
       '2012: 1st rank for academic and behavioural excellence',
