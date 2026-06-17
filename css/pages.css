@@ -470,7 +470,7 @@
 .bday-title    { font-family: var(--ff-display); font-size: clamp(2rem,5vw,3.5rem); font-weight: 300; font-style: italic; color: var(--text2); margin-bottom: 3rem; }
 .bday-timer    { display: flex; gap: 3rem; align-items: flex-end; justify-content: center; flex-wrap: wrap; }
 .bday-unit     { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-.bday-value    { font-family: var(--ff-display); font-size: clamp(3rem,8vw,6rem); font-weight: 300; color: var(--text); line-height: 1; min-width: 2ch; text-align: center; }
+.bday-value    { font-family: var(--ff-display);  font-size: clamp(3rem,8vw,6rem);  font-weight: 300;  color: var(--text);  line-height: 1;  min-width: 2ch;  text-align: center; font-variant-numeric: tabular-nums; }
 .bday-label    { font-family: var(--ff-mono); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text3); }
 .bday-separator { font-family: var(--ff-display); font-size: 3rem; color: var(--accent); opacity: 0.4; padding-bottom: 0.5rem; }
 .bday-ms       { font-family: var(--ff-mono); font-size: clamp(1rem,3vw,1.5rem); color: var(--text3); margin-top: 1rem; }
